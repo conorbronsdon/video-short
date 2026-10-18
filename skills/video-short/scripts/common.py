@@ -4,6 +4,7 @@ import json, os, re, subprocess, sys, wave
 import numpy as np
 
 FPS = 30
+HF = "hyperframes@0.8.169"   # pinned, so renders and transcripts stay the same across machines
 W, H = 1080, 1920
 SPLIT_TOP = 880  # split layout: B-roll panel is y 0..880, speaker panel is y 880..1920
 LAYOUTS = ("a-roll", "punch", "split", "b-roll")

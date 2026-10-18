@@ -28,11 +28,11 @@ Video Short runs on your computer and needs:
 
 - **ffmpeg** to cut and encode video.
 - **yt-dlp** to pull B-roll from YouTube, X, and other sites.
-- **Python 3.10 or newer** for transcription, which runs on your computer with a local speech model (about 600 MB).
-- **Node.js 22 or newer** for [HyperFrames](https://github.com/heygen-com/hyperframes), the free, open-source renderer that turns the edit into video.
+- **Python 3.10 or newer** to run the editing scripts.
+- **Node.js 22 or newer** for [HyperFrames](https://github.com/heygen-com/hyperframes), the free, open-source tool that transcribes your recording on your computer with the Parakeet speech model and renders the edit into video.
 - **Optional: A Gemini API key** with billing enabled, to generate images with Nano Banana, video clips with Veo, and music with Lyria. Get a key at [Google AI Studio](https://aistudio.google.com/apikey) and set `GEMINI_API_KEY`.
 
-The first time you use the skill, it checks for these, offers to install anything missing, and sets up HyperFrames for you.
+The first time you use the skill, it checks for these, offers to install anything missing, and sets up HyperFrames for you. Plan for about 1 GB of disk space, mostly the speech model and the headless Chrome that renders the video.
 
 ## How to use Video Short
 

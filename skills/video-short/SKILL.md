@@ -9,13 +9,13 @@ Input: a raw talking-head recording. Output: `renders/<project>-vN.mp4` at 1080x
 
 You make every editorial call. The scripts measure, render, and serve the review page. Commands, the `edit.md` format, graphics, and style keys live in [reference.md](reference.md).
 
-On first use, run `setup.sh`. It checks for ffmpeg, yt-dlp, Python, and Node.js 22+, then installs the Python packages and HyperFrames, which renders the video. If it lists missing tools, tell the user Video Short needs them and offer to install them with the commands it prints. A `GEMINI_API_KEY` with billing enabled is optional, for generated images, video, and music.
+On first use, run `setup.sh`. It checks for ffmpeg, yt-dlp, Python, and Node.js 22+, then installs numpy and HyperFrames, which transcribes with Parakeet and renders the video. If it lists missing tools, tell the user Video Short needs them and offer to install them with the commands it prints. A `GEMINI_API_KEY` with billing enabled is optional, for generated images, video, and music.
 
 ## 1. Cut
 
 Make one folder per Short, named with a short slug, where the user asks, else `projects_dir` from the style file, else the current folder. Leave the recording untouched and point `Source:` at it.
 
-Run `transcribe.py` and read every line of `work/transcript_raw.md`. Parakeet keeps ums, stutters, and restarts, so retakes show in the text. Write `## Cuts` in `edit.md`:
+Run `transcribe.py` and read every line of `work/transcript_raw.md`. It runs Parakeet locally, which keeps ums, stutters, and restarts, so retakes show in the text. Write `## Cuts` in `edit.md`:
 
 - Keep the last complete take of any repeated line. Drop false starts, stray fillers, and dead air.
 - Cut between words, never inside one; use the word times in the `.json` for a restart mid-sentence.

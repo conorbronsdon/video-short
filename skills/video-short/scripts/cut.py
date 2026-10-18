@@ -9,7 +9,7 @@ import argparse, os, tempfile
 
 import numpy as np
 from common import FPS, die, energy_db, load_style, parse_edit, probe, project_paths, read_wav_mono, run, setting
-from transcribe import extract_wav, transcribe
+from transcribe import transcribe
 
 
 def snap(cuts, db, duration, hop=0.01):
@@ -56,7 +56,7 @@ def main():
 
     with tempfile.TemporaryDirectory() as tmp:
         wav = os.path.join(tmp, "raw.wav")
-        extract_wav(src, wav)
+        run(["ffmpeg", "-v", "error", "-y", "-i", src, "-vn", "-ac", "1", "-ar", "16000", "-c:a", "pcm_s16le", wav])
         pcm, sr = read_wav_mono(wav)
         cuts = snap(sorted(edit["cuts"]), energy_db(pcm, sr), duration)
 

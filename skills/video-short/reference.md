@@ -1,6 +1,6 @@
 # Video Short reference
 
-Set `S` to this skill's `scripts` folder and `P` to the project folder. Run every Python script through `$S/py`, which creates a venv at `~/.cache/video-short/venv` and installs numpy and onnx-asr. The first transcription downloads the Parakeet model (about 600 MB). HyperFrames runs through `npx`, pinned to version 0.8.169.
+Set `S` to this skill's `scripts` folder and `P` to the project folder. Run every Python script through `$S/py`, which creates a venv at `~/.cache/video-short/venv` with numpy. HyperFrames runs through `npx`, pinned to version 0.8.169; `setup.sh` downloads its headless Chrome and the Parakeet speech model, about 1 GB together.
 
 ```bash
 S=/path/to/video-short/scripts
@@ -11,7 +11,7 @@ mkdir -p "$P/broll"
 ## Commands
 
 ```bash
-# First use: check tools, install Python packages, fetch HyperFrames and its Chrome
+# First use: check tools, install numpy, fetch HyperFrames with its Chrome and Parakeet
 $S/setup.sh
 
 # 1. Cut
