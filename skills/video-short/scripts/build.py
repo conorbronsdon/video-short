@@ -385,7 +385,7 @@ def build(project, style_arg=None):
                        cap_radius=cs.get("radius", 8), pad_x=cs.get("pad", [36, 20])[0], pad_y=cs.get("pad", [36, 20])[1],
                        cap_border=css_color(cs.get("border", "#00000000")), em=css_color(cs.get("emphasis") or cd["accent"]),
                        card_bg=css_color(cd["background"]), panel=css_color(cd["panel"]), border=css_color(cd["border"]),
-                       text=css_color(cd["text"]), muted=css_color(cd["muted"]), accent=css_color(cd["accent"]),
+                       text=css_color(cd["text"]), accent=css_color(cd["accent"]),
                        hosts="\n".join(hosts), w_cap=cs.get("weight", 500), w_title=cd.get("title_weight", 800),
                        w_body=cd.get("body_weight", 600), w_num=cd.get("number_weight", 800), caps="\n  ".join(caps), script="\n".join(js))
     open(os.path.join(hf, "index.html"), "w").write(page)

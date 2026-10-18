@@ -1,5 +1,4 @@
 {
-  "name": "default",
   "background": "#0B0B0D",
   "punch_zoom": 1.1,
   "caption": {
@@ -24,7 +23,6 @@
     "panel": "#17171B",
     "border": "#FFFFFF24",
     "text": "#FFFFFF",
-    "muted": "#A1A1AA",
     "accent": "#3B82F6",
     "title_font": "../fonts/InterVariable.woff2",
     "body_font": "../fonts/InterVariable.woff2",

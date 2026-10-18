@@ -34,7 +34,7 @@ $S/py $S/render.py "$P"
 $S/py $S/qa.py "$P"
 ```
 
-`render.py` builds the HyperFrames project in `hf/`, renders it, adds the audio mix, and saves the next version in `renders/`. A 45-second Short takes about 1.5 minutes on an M-series Mac, draft or final; `--draft` only lowers encoding quality. `review.py` reviews the newest render unless you pass a video, saves notes to `work/feedback.md`, and uses port 8791 or any free port. `render.py` and `qa.py` accept `--style FILE`.
+`render.py` builds the HyperFrames project in `hf/`, renders it, adds the audio mix, and saves the next version in `renders/`. A draft takes as long as a final; `--draft` only lowers encoding quality. `review.py` reviews the newest render unless you pass a video, saves notes to `work/feedback.md`, and uses port 8791 or any free port. `render.py` accepts `--style FILE`; `qa.py` checks the newest render unless you pass a video.
 
 Generation: images come back as 9:16 JPEGs; Veo clips run 4, 6, or 8 seconds and can start from an image; music under 30 seconds uses the clip model, longer uses the full-song model. Free-tier keys get no generation requests, so the key needs billing enabled. `--model` overrides a default when Google renames a model; current IDs are at https://ai.google.dev/gemini-api/docs/models.
 
