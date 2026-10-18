@@ -88,4 +88,4 @@ Subscribe to my [YouTube channel](https://www.youtube.com/@PeterYangYT?sub_confi
 
 ## License
 
-MIT. The bundled Inter and Manrope fonts are under the SIL Open Font License ([Inter](skills/video-short/fonts/OFL-Inter.txt), [Manrope](skills/video-short/fonts/OFL-Manrope.txt)).
+MIT. The bundled Inter font is under the [SIL Open Font License](skills/video-short/fonts/OFL.txt).

@@ -227,7 +227,7 @@ def build(project, style_arg=None):
         name = os.path.basename(path)
         shutil.copy(path, os.path.join(A, "fonts", name))
         fonts[key] = name
-    face_css = "\n".join(f'@font-face {{ font-family: "F{k}"; src: url("assets/fonts/{v}"); }}' for k, v in fonts.items())
+    face_css = "\n".join(f'@font-face {{ font-family: "F{k}"; src: url("assets/fonts/{v}"); font-weight: 100 900; }}' for k, v in fonts.items())
 
     # Duplicate clip check: each source moment is used once.
     seen = {}
@@ -387,7 +387,8 @@ def build(project, style_arg=None):
                        cap_border=css_color(cs.get("border", "#00000000")), em=css_color(cs.get("emphasis") or cd["accent"]),
                        card_bg=css_color(cd["background"]), panel=css_color(cd["panel"]), border=css_color(cd["border"]),
                        text=css_color(cd["text"]), muted=css_color(cd["muted"]), accent=css_color(cd["accent"]),
-                       hosts="\n".join(hosts), caps="\n  ".join(caps), script="\n".join(js))
+                       hosts="\n".join(hosts), w_cap=cs.get("weight", 500), w_title=cd.get("title_weight", 800),
+                       w_body=cd.get("body_weight", 600), w_num=cd.get("number_weight", 800), caps="\n  ".join(caps), script="\n".join(js))
     open(os.path.join(hf, "index.html"), "w").write(page)
     print(f"{hf}/index.html: {len(scenes)} scenes, {len(track)} captions, {dur:.2f}s. Review: npx hyperframes preview {hf}")
     return hf, mix, dur
@@ -411,18 +412,18 @@ html, body {{ margin: 0; width: 100%; height: 100%; overflow: hidden; background
 .cardbg {{ background: {card_bg}; display: flex; justify-content: center; align-items: center; }}
 .card {{ width: 960px; box-sizing: border-box; padding: 52px 56px; border-radius: 28px; background: {panel}; border: 2px solid {border}; }}
 .card.big {{ width: 960px; padding: 64px; }}
-.card .title {{ font: 80px/1.1 Ftitle, sans-serif; color: {text}; }}
+.card .title {{ font: {w_title} 80px/1.1 Ftitle, sans-serif; color: {text}; }}
 .card.big .title {{ font-size: 96px; }}
 .card .rows {{ margin-top: 30px; }}
-.card .row {{ display: flex; gap: 30px; align-items: baseline; margin-top: 30px; font: 54px/1.25 Fbody, sans-serif; color: {text}; }}
+.card .row {{ display: flex; gap: 30px; align-items: baseline; margin-top: 30px; font: {w_body} 54px/1.25 Fbody, sans-serif; color: {text}; }}
 .card.big .row {{ font-size: 64px; }}
-.card .rn {{ font: 44px/1 Fnum, sans-serif; color: {accent}; flex: none; width: 90px; }}
+.card .rn {{ font: {w_num} 44px/1 Fnum, sans-serif; color: {accent}; flex: none; width: 90px; }}
 .numwrap {{ text-align: center; }}
-.bignum {{ font-family: Fnum, sans-serif; color: {accent}; line-height: 1; }}
-.numlab {{ margin-top: 28px; font: 56px/1.2 Fbody, sans-serif; color: {text}; padding: 0 60px; }}
+.bignum {{ font-family: Fnum, sans-serif; font-weight: {w_num}; color: {accent}; line-height: 1; }}
+.numlab {{ margin-top: 28px; font: {w_body} 56px/1.2 Fbody, sans-serif; color: {text}; padding: 0 60px; }}
 .cap {{ position: absolute; left: 0; width: {W}px; z-index: 50; text-align: center; transform: translateY(-50%); }}
 .cap .band {{ display: inline-block; max-width: 880px; padding: {pad_y}px {pad_x}px; border-radius: {cap_radius}px; background: {cap_box};
-             box-shadow: 0 0 0 2px {cap_border}; font: {cap_size}px/1.2 Fcap, sans-serif; color: {cap_color}; }}
+             box-shadow: 0 0 0 2px {cap_border}; font: {w_cap} {cap_size}px/1.2 Fcap, sans-serif; color: {cap_color}; }}
 .cap .em {{ background: {em}; padding: 0 10px; border-radius: 4px; }}
 </style></head><body>
 <div id="root" data-composition-id="short" data-width="{W}" data-height="{H}" data-fps="30" data-start="0" data-duration="{dur}">

@@ -150,7 +150,7 @@ Inspect a clip before using it: `$S/py $S/frames.py clip.mp4 /tmp/look --count 4
 
 ## style.json
 
-`sound_effects` is the default for the `Sound effects:` line. Every key is optional; missing keys fall back to `styles/default.json`. `pad` is the band's horizontal and vertical padding; `max_words` and `max_chars` cap each caption, which also splits at punctuation and pauses; `border` with zero alpha draws no outline. Font paths are relative to the style file. Colors are `#RRGGBB` or `#RRGGBBAA`. `projects_dir` is where new projects go when the user doesn't say. `grade` is the default ffmpeg grade, used when `edit.md` has no `Grade:` line.
+`sound_effects` is the default for the `Sound effects:` line. Every key is optional; missing keys fall back to `styles/default.json`. `pad` is the band's horizontal and vertical padding; `max_words` and `max_chars` cap each caption, which also splits at punctuation and pauses; `border` with zero alpha draws no outline. Font paths are relative to the style file; weights pick a weight from a variable font. The default is Inter for everything. Colors are `#RRGGBB` or `#RRGGBBAA`. `projects_dir` is where new projects go when the user doesn't say. `grade` is the default ffmpeg grade, used when `edit.md` has no `Grade:` line.
 
 ```json
 {
@@ -158,12 +158,12 @@ Inspect a clip before using it: `$S/py $S/frames.py clip.mp4 /tmp/look --count 4
   "grade": "colortemperature=temperature=6200,eq=contrast=1.04:saturation=1.05",
   "punch_zoom": 1.1,
   "caption_y": {"a-roll": 1400, "punch": 1400, "split": 880, "b-roll": 1560},
-  "caption": {"font": "fonts/MyFont.ttf", "size": 64, "color": "#FFFFFF", "box": "#000000E0",
+  "caption": {"font": "fonts/MyFont.woff2", "weight": 500, "size": 64, "color": "#FFFFFF", "box": "#000000E0",
               "border": "#FFFFFF30", "radius": 18, "pad": [36, 20], "uppercase": true,
               "max_words": 3, "max_chars": 18, "emphasis": "#F59E0B"},
   "card": {"background": "#0B0B0D", "panel": "#17171B", "border": "#FFFFFF24", "text": "#FFFFFF",
-           "accent": "#3B82F6", "title_font": "fonts/Title.ttf", "body_font": "fonts/Body.ttf",
-           "number_font": "fonts/Mono.ttf"},
+           "accent": "#3B82F6", "title_font": "fonts/Title.woff2", "title_weight": 800, "body_font": "fonts/Body.woff2",
+           "body_weight": 600, "number_font": "fonts/Mono.woff2", "number_weight": 800},
   "sound_effects": "off"
 }
 ```
