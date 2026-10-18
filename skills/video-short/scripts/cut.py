@@ -1,9 +1,11 @@
 """Apply the Cuts and Grade from edit.md (or the style's default grade) in one ffmpeg pass, then re-transcribe the cut video.
 usage: cut.py PROJECT
+       cut.py PROJECT --look [--grade FILTER]   (stills of the Source in work/look/ to judge framing and color)
 reads edit.md (Source, Grade, ## Cuts); writes work/clean.mp4 and work/transcript_clean.md/.json.
+--look draws a 10x10 grid, so the face center reads as x, y in tenths; with --grade each still is original | graded.
 One pass keeps audio and video in sync across every join. Cut edges snap to the quietest 10ms
 nearby and to the 30fps frame grid so no join lands on a waveform peak."""
-import os, sys, tempfile
+import argparse, os, tempfile
 
 import numpy as np
 from common import FPS, die, energy_db, load_style, parse_edit, probe, project_paths, read_wav_mono, run, setting
@@ -24,15 +26,30 @@ def snap(cuts, db, duration, hop=0.01):
     return out
 
 
+def look(src, out_dir, duration, grade):
+    os.makedirs(out_dir, exist_ok=True)
+    grid = "drawgrid=w=iw/10:h=ih/10:t=2:c=yellow@0.7"
+    for t in (duration * k / 4 for k in (1, 2, 3)):
+        out = os.path.join(out_dir, f"{'grade' if grade else 'frame'}_{t:06.2f}.jpg")
+        vf = f"split[a][b];[b]{grade}[g];[a][g]hstack" if grade else grid
+        run(["ffmpeg", "-v", "error", "-y", "-ss", f"{t:.3f}", "-i", src, "-frames:v", "1", "-filter_complex", f"{vf},scale='min(1600,iw)':-2", "-q:v", "3", out])
+        print(out)
+
+
 def main():
-    if len(sys.argv) != 2:
-        sys.exit(__doc__)
-    paths = project_paths(sys.argv[1])
+    ap = argparse.ArgumentParser()
+    ap.add_argument("project")
+    ap.add_argument("--look", action="store_true")
+    ap.add_argument("--grade")
+    a = ap.parse_args()
+    paths = project_paths(a.project)
     edit = parse_edit(paths["edit"])
     src = setting(edit, "source")
     if not src:
         die("edit.md needs a 'Source: raw.mp4' line")
     src = src if os.path.isabs(src) else os.path.join(paths["root"], src)
+    if a.look:
+        return look(src, os.path.join(paths["work"], "look"), probe(src)[2], a.grade)
     if not edit["cuts"]:
         die("edit.md has no ranges under '## Cuts'")
     _, _, duration = probe(src)

@@ -1,9 +1,7 @@
-"""Build edit.md into a HyperFrames project (PROJECT/hf) for review in HyperFrames Studio and for rendering.
-usage: build.py PROJECT [--style STYLE_JSON]
+"""Build edit.md into the HyperFrames project (PROJECT/hf) that render.py renders.
 The project holds the cut video, one host per scene (speaker, split, or full-screen visual), animated cards,
-captions on their own track, and the audio mix. Open it with `npx hyperframes preview PROJECT/hf`; render with
-render.py. Every time comes from the cut timeline in edit.md."""
-import argparse, html, json, os, re, shutil, subprocess
+captions on their own track, and the audio mix. Every time comes from the cut timeline in edit.md."""
+import html, json, os, re, shutil, subprocess
 
 import numpy as np
 from common import (FPS, H, SPLIT_TOP, W, die, frames, load_style, parse_edit, parse_framing, probe, project_paths,
@@ -38,7 +36,8 @@ def prep_clip(vis, dur, out):
     """Trim (and loop if short) a clip to exactly the scene's length, muted, at 30 fps, so seeks are exact."""
     if os.path.isfile(out):
         return
-    loop = ["-ignore_loop", "0"] if vis["abs"].lower().endswith(".gif") else ["-stream_loop", "-1"]
+    ext = os.path.splitext(vis["abs"])[1].lower()
+    loop = ["-ignore_loop", "0"] if ext == ".gif" else ["-loop", "1"] if ext in (".png", ".jpg", ".jpeg", ".webp") else ["-stream_loop", "-1"]
     run(["ffmpeg", "-v", "error", "-y", *loop, "-ss", f"{vis['start']:.3f}", "-i", vis["abs"], "-t", f"{dur:.3f}", "-an",
          "-vf", f"fps={FPS},scale=trunc(iw/2)*2:trunc(ih/2)*2", "-c:v", "libx264", "-crf", "17", "-g", "15", "-pix_fmt", "yuv420p", out])
 
@@ -390,7 +389,7 @@ def build(project, style_arg=None):
                        hosts="\n".join(hosts), w_cap=cs.get("weight", 500), w_title=cd.get("title_weight", 800),
                        w_body=cd.get("body_weight", 600), w_num=cd.get("number_weight", 800), caps="\n  ".join(caps), script="\n".join(js))
     open(os.path.join(hf, "index.html"), "w").write(page)
-    print(f"{hf}/index.html: {len(scenes)} scenes, {len(track)} captions, {dur:.2f}s. Review: npx hyperframes preview {hf}")
+    print(f"Built {len(scenes)} scenes and {len(track)} captions ({dur:.2f}s).")
     return hf, mix, dur
 
 
@@ -447,10 +446,3 @@ tl.to({{}}, {{ duration: {dur} }}, 0);
 window.__timelines["short"] = tl;
 </script></body></html>
 """
-
-if __name__ == "__main__":
-    ap = argparse.ArgumentParser()
-    ap.add_argument("project")
-    ap.add_argument("--style")
-    a = ap.parse_args()
-    build(a.project, a.style)
