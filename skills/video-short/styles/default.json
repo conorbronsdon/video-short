@@ -1,0 +1,33 @@
+{
+  "name": "default",
+  "background": "#0B0B0D",
+  "punch_zoom": 1.1,
+  "caption": {
+    "font": "../fonts/Manrope-Medium.woff2",
+    "size": 56,
+    "color": "#FFFFFF",
+    "box": "#0000008C",
+    "border": "#00000000",
+    "radius": 8,
+    "pad": [
+      22,
+      12
+    ],
+    "uppercase": false,
+    "max_words": 4,
+    "max_chars": 26,
+    "emphasis": "#3B82F6"
+  },
+  "card": {
+    "background": "#0B0B0D",
+    "panel": "#17171B",
+    "border": "#FFFFFF24",
+    "text": "#FFFFFF",
+    "muted": "#A1A1AA",
+    "accent": "#3B82F6",
+    "title_font": "../fonts/Inter-ExtraBold.ttf",
+    "body_font": "../fonts/Inter-SemiBold.ttf",
+    "number_font": "../fonts/Inter-ExtraBold.ttf"
+  },
+  "sound_effects": "off"
+}

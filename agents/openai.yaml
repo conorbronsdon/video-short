@@ -1,0 +1,4 @@
+interface:
+  display_name: "/video-short"
+  short_description: "Turn a raw talking-head recording into a captioned 1080x1920 Short with B-roll and motion graphics."
+  default_prompt: "Use $video-short to turn my raw recording into a 1080x1920 Short. Cut retakes and dead air, plan layouts, B-roll, and motion graphics, open it in HyperFrames Studio for my notes, then render it with captions."
