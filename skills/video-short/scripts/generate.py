@@ -53,9 +53,9 @@ def image(a, key):
 def video(a, key):
     inst = {"prompt": a.prompt}
     if a.image:
-        inst["image"] = {"inlineData": {"mimeType": mimetypes.guess_type(a.image)[0] or "image/png",
-                                        "data": base64.b64encode(open(a.image, "rb").read()).decode()}}
-    seconds = str(min((4, 6, 8), key=lambda s: abs(s - (a.seconds or 6))))
+        inst["image"] = {"bytesBase64Encoded": base64.b64encode(open(a.image, "rb").read()).decode(),
+                         "mimeType": mimetypes.guess_type(a.image)[0] or "image/jpeg"}
+    seconds = min((4, 6, 8), key=lambda s: abs(s - (a.seconds or 6)))
     op = call(f"{API}/models/{a.model}:predictLongRunning", key,
               {"instances": [inst], "parameters": {"aspectRatio": a.aspect, "durationSeconds": seconds}})
     while not op.get("done"):
