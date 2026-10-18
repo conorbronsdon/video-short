@@ -21,7 +21,7 @@ $S/py $S/cut.py "$P" --look --grade "eq=contrast=1.06:saturation=1.1"
 $S/py $S/cut.py "$P"                                            # -> work/clean.mp4 and transcript_clean
 
 # 2. Optional generation (needs GEMINI_API_KEY with billing enabled)
-$S/py $S/generate.py image "$P/broll/castle.jpg" --prompt "..."
+$S/py $S/generate.py image "$P/broll/castle.jpg" --prompt "..."   # a first frame for Veo, never B-roll on its own
 $S/py $S/generate.py video "$P/broll/castle.mp4" --prompt "slow push through the gate" --image "$P/broll/castle.jpg" --seconds 6
 $S/py $S/generate.py music "$P/music.mp3" --prompt "warm lo-fi, Rhodes piano, soft brushed drums" --seconds 45
 
@@ -36,7 +36,7 @@ $S/py $S/qa.py "$P"
 
 `render.py` builds the HyperFrames project in `hf/`, renders it, adds the audio mix, and saves the next version in `renders/`. A draft takes as long as a final; `--draft` only lowers encoding quality. `review.py` reviews the newest render unless you pass a video, saves notes to `work/feedback.md`, and uses port 8791 or any free port. `render.py` accepts `--style FILE`; `qa.py` checks the newest render unless you pass a video.
 
-Generation: images come back as 9:16 JPEGs; Veo clips run 4, 6, or 8 seconds and can start from an image; music under 30 seconds uses the clip model, longer uses the full-song model. Free-tier keys get no generation requests, so the key needs billing enabled. `--model` overrides a default when Google renames a model; current IDs are at https://ai.google.dev/gemini-api/docs/models.
+Generation: images come back as 9:16 JPEGs for Veo's first frame; Veo clips run 4, 6, or 8 seconds and can start from an image; music under 30 seconds uses the clip model, longer uses the full-song model. Free-tier keys get no generation requests, so the key needs billing enabled. `--model` overrides a default when Google renames a model; current IDs are at https://ai.google.dev/gemini-api/docs/models.
 
 ## edit.md
 
@@ -81,7 +81,7 @@ Sound effects: off
 - `Sound effects`: `off` (default) or `subtle`: quiet taps when a card, row, or number enters and a soft whoosh on B-roll cuts, synthesized locally.
 - `Music`: an audio file or `none`. `Music level`: dB relative to the voice (default -18). The mix normalizes to -14 LUFS with a -1.5 dBTP soft ceiling.
 - Scenes must be contiguous: each start equals the previous end, the first starts at 0, and the last ends at the clean video's end.
-- `visual` for a clip: `path [@start] [fit|fill]`, a video, gif, or image. Images get a slow push-in. `@start` is the second in the clip to begin from. `fill` crops to cover the panel; `fit` shows the whole clip over a blurred copy. The default picks `fill` when the shapes are close and `fit` otherwise. Clips shorter than their scene loop.
+- `visual` for a clip: `path [@start] [fit|fill]`, a video or gif. `@start` is the second in the clip to begin from. `fill` crops to cover the panel; `fit` shows the whole clip over a blurred copy. The default picks `fill` when the shapes are close and `fit` otherwise. Clips shorter than their scene loop.
 - `visual` for a card: `card: Title ; row ; row`. Separate parts with `;`, because `|` ends a table cell. Rows slide in one by one. When the next scene repeats the same title and rows, only its new rows animate, so a list builds across scenes.
 - `visual` for a number: `number: 3x ; label`. The number counts up from zero, keeping any prefix or suffix such as `$`, `%`, or `x`, and the label fades in below.
 - `visual` for a graphic: `graphic: path.html`, a HyperFrames sub-composition you write. See below.

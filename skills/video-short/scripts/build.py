@@ -36,8 +36,7 @@ def prep_clip(vis, dur, out):
     """Trim (and loop if short) a clip to exactly the scene's length, muted, at 30 fps, so seeks are exact."""
     if os.path.isfile(out):
         return
-    ext = os.path.splitext(vis["abs"])[1].lower()
-    loop = ["-ignore_loop", "0"] if ext == ".gif" else ["-loop", "1"] if ext in (".png", ".jpg", ".jpeg", ".webp") else ["-stream_loop", "-1"]
+    loop = ["-ignore_loop", "0"] if vis["abs"].lower().endswith(".gif") else ["-stream_loop", "-1"]
     run(["ffmpeg", "-v", "error", "-y", *loop, "-ss", f"{vis['start']:.3f}", "-i", vis["abs"], "-t", f"{dur:.3f}", "-an",
          "-vf", f"fps={FPS},scale=trunc(iw/2)*2:trunc(ih/2)*2", "-c:v", "libx264", "-crf", "17", "-g", "15", "-pix_fmt", "yuv420p", out])
 

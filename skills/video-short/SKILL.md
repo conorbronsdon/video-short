@@ -33,14 +33,14 @@ Research what the Short needs, then write `## Scenes` in `edit.md`, one row per 
 - **Layouts:** `a-roll` (full-screen speaker), `punch` (tighter speaker for emphasis), `split` (visual on top, speaker below), `b-roll` (visual full screen).
 - **Keep the speaker present** for at least half the Short, and end each full-screen B-roll shot within about 3.5 seconds, because viewers connect with a face.
 - **Visuals show what the words don't:** the product doing the thing, the result, the proof. Captions already carry the words.
-- **Everything off-camera moves.** Real footage first. Otherwise a list card that adds a row per spoken item, a `number:` that counts up to a stat the speaker says, or a `graphic:` you write for anything else, such as a flow or a before and after. A still image needs motion on it.
-- **Pace:** Change the shot every few seconds, since a phone viewer swipes away from a static frame. Give each spoken list item its own beat. Use each clip once.
+- **Everything off-camera moves.** Real footage first. Otherwise a list card that adds a row per spoken item, a `number:` that counts up to a stat the speaker says, or a `graphic:` you write for anything else, such as a flow or a before and after. Never use a still image as B-roll; an image is only the first frame of a Veo clip.
+- **Pace:** Change the shot every few seconds, since a phone viewer swipes away from a static frame. When the speaker names several things in a row, give each its own clip or card row on its spoken word. Use each clip once.
 
-Find B-roll in this order: the user's own footage, then official demos and the media in posts or launch pages about the topic. Trim each clip to its useful seconds and crop until it reads on a phone. Use footage the user has the right to use.
+Find B-roll in this order: the user's own footage, then official demos and the media in posts or launch pages about the topic. Trim each clip to its useful seconds and crop until it reads on a phone. Keep every line of on-screen text whole: capture web pages at phone width and drift down one complete section instead of panning across it, and crop product UI at component edges. Use footage the user has the right to use.
 
 When the user has a Gemini key and a shot has no good footage, propose generating it: a Nano Banana image, a Veo clip, or a Lyria music bed. Generate only what the user approves, because each call costs money.
 
-Add `## Caption fixes` for misspelled names, and `## Emphasis` for the rare term that earns a box in the caption, such as a product name or the main number, so captions stay quiet. For music, use the user's track, a Lyria bed they approve, or none. Leave sound effects off unless the user asks.
+Add `## Caption fixes` for misspelled names, and `## Emphasis` for the rare term that earns a box in the caption, such as a product name or the main number, so captions stay quiet. For music, use the user's track, a Lyria bed they approve, or none. Lyria sometimes returns slow solo piano, so share a generated bed for a listen and regenerate it if it lacks the groove the user asked for. Leave sound effects off unless the user asks.
 
 Show the plan in chat and wait for a go:
 
