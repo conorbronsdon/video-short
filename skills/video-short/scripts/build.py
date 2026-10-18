@@ -165,7 +165,7 @@ def fit_length(pcm, n):
     return np.vstack([pcm, np.zeros((n - len(pcm), 2))])
 
 
-def mix_audio(clean, music, level_db, duration, out_wav):
+def mix_audio(clean, music, level_db, duration, out_wav, lifts=()):
     n = int(round(duration * SR))
     voice = fit_length(read_pcm(clean, duration), n)
     v = lufs(voice)
@@ -180,6 +180,14 @@ def mix_audio(clean, music, level_db, duration, out_wav):
         b = lufs(bed)
         if b > -60:
             bed *= 10 ** ((-14 + level_db - b) / 20)
+        for a, z in lifts:   # 'Music lift' ranges: the bed rises 9 dB with short ramps, for a beat where the music is the point
+            env = np.ones(n)
+            i, j, r = int(a * SR), min(n, int(z * SR)), int(0.25 * SR)
+            if j > i:
+                env[i:j] = 10 ** (9 / 20)
+                env[max(0, i - r):i] = np.linspace(1, 10 ** (9 / 20), i - max(0, i - r))
+                env[j:min(n, j + r)] = np.linspace(10 ** (9 / 20), 1, min(n, j + r) - j)
+                bed *= env[:, None]
         ramp = min(n, int(1.2 * SR))
         bed[:ramp] *= np.linspace(0.4, 1.0, ramp)[:, None]  # keep the opening hook clear
         tail = min(n, int(0.6 * SR))
@@ -366,7 +374,8 @@ def build(project, style_arg=None):
         music = None
     level = float(re.findall(r"-?[\d.]+", setting(edit, "music level", "-18"))[0])
     mix = os.path.join(A, "mix.wav")
-    mix_audio(paths["clean"], music, level, dur, mix)
+    lifts = [tuple(float(x) for x in r.split("-")) for r in re.findall(r"\d+(?:\.\d+)?-\d+(?:\.\d+)?", setting(edit, "music lift", ""))]
+    mix_audio(paths["clean"], music, level, dur, mix, lifts)
     if (setting(edit, "sound effects") or style.get("sound_effects", "off")).lower() in ("subtle", "on"):
         raw = subprocess.run(["ffmpeg", "-v", "error", "-i", mix, "-f", "f32le", "-ac", "2", "-ar", str(SR), "-"], capture_output=True).stdout
         m = np.frombuffer(raw, np.float32).reshape(-1, 2).astype(np.float64).copy()

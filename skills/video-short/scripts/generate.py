@@ -1,5 +1,5 @@
 """Optional: generate an image (Nano Banana), a video clip (Veo), or a music bed (Lyria) with the Gemini API.
-Needs GEMINI_API_KEY (free key at https://aistudio.google.com/apikey; Veo is billed per second of video).
+Needs GEMINI_API_KEY with billing enabled, from the environment or ~/.config/video-short/.env (a line GEMINI_API_KEY=...).
 usage: generate.py image OUT.jpg --prompt "..." [--aspect 9:16]
        generate.py video OUT.mp4 --prompt "..." [--image START.jpg] [--seconds 4|6|8] [--aspect 9:16]
        generate.py music OUT.mp3 --prompt "warm lo-fi, Rhodes, soft drums" [--seconds 45]
@@ -9,6 +9,19 @@ import argparse, base64, json, mimetypes, os, sys, time, urllib.error, urllib.re
 API = "https://generativelanguage.googleapis.com/v1beta"
 MODELS = {"image": "gemini-nano-banana-2.1", "video": "veo-3.1-generate-preview", "music": "lyria-3-clip-preview"}
 LONG_MUSIC = "lyria-3.5"   # the clip model always makes 30 seconds
+
+
+SETTINGS = os.path.expanduser("~/.config/video-short/.env")
+
+
+def settings_key():
+    """The key from the settings file, so it never has to be pasted into chat."""
+    if os.path.isfile(SETTINGS):
+        for line in open(SETTINGS):
+            k, _, v = line.strip().partition("=")
+            if k.strip() in ("GEMINI_API_KEY", "GOOGLE_API_KEY") and v.strip():
+                return v.strip().strip("'\"")
+    return None
 
 
 def call(url, key, body=None, timeout=300):
@@ -74,9 +87,9 @@ def main():
     ap.add_argument("--model")
     a = ap.parse_args()
     a.model = a.model or MODELS[a.kind]
-    key = os.environ.get("GEMINI_API_KEY") or os.environ.get("GOOGLE_API_KEY")
+    key = os.environ.get("GEMINI_API_KEY") or os.environ.get("GOOGLE_API_KEY") or settings_key()
     if not key:
-        sys.exit("Set GEMINI_API_KEY (free key at https://aistudio.google.com/apikey).")
+        sys.exit(f"No Gemini key. Put GEMINI_API_KEY=... in {SETTINGS} (key at https://aistudio.google.com/apikey).")
     os.makedirs(os.path.dirname(os.path.abspath(a.out)) or ".", exist_ok=True)
     {"image": image, "video": video, "music": music}[a.kind](a, key)
     print(f"{a.kind} -> {a.out}")

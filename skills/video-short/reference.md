@@ -36,7 +36,7 @@ $S/py $S/qa.py "$P"
 
 `render.py` builds the HyperFrames project in `hf/`, renders it, adds the audio mix, and saves the next version in `renders/`. A draft takes as long as a final; `--draft` only lowers encoding quality. `review.py` reviews the newest render unless you pass a video, saves notes to `work/feedback.md`, and uses port 8791 or any free port. `render.py` accepts `--style FILE`; `qa.py` checks the newest render unless you pass a video.
 
-Generation: images come back as 9:16 JPEGs for Veo's first frame; Veo clips run 4, 6, or 8 seconds and can start from an image; music under 30 seconds uses the clip model, longer uses the full-song model. Free-tier keys get no generation requests, so the key needs billing enabled. `--model` overrides a default when Google renames a model; current IDs are at https://ai.google.dev/gemini-api/docs/models.
+Generation: images come back as 9:16 JPEGs for Veo's first frame; Veo clips run 4, 6, or 8 seconds and can start from an image; music under 30 seconds uses the clip model, longer uses the full-song model. Free-tier keys get no generation requests, so the key needs billing enabled. `The key comes from `GEMINI_API_KEY` or a `GEMINI_API_KEY=...` line in `~/.config/video-short/.env`, so it never goes in chat. `--model` overrides a default when Google renames a model; current IDs are at https://ai.google.dev/gemini-api/docs/models.
 
 ## edit.md
 
@@ -50,6 +50,7 @@ Grade: eq=contrast=1.06:saturation=1.1:brightness=0.01
 Framing: 0.47, 0.36
 Music: music.mp3
 Music level: -18
+Music lift: 14.0-16.0
 Sound effects: off
 
 ## Cuts
@@ -79,6 +80,7 @@ Sound effects: off
 - `Grade`: any ffmpeg video filter chain, or `none`. Leave it out to use the style's `grade`. Useful pieces: `eq=contrast=:saturation=:brightness=:gamma=`, `colortemperature=temperature=5600`, `lut3d=file.cube`.
 - `Framing`: face center as fractions of the source frame width and height.
 - `Sound effects`: `off` (default) or `subtle`: quiet taps when a card, row, or number enters and a soft whoosh on B-roll cuts, synthesized locally.
+- `Music lift`: cut-timeline ranges where the music rises 9 dB for a beat, such as when the speaker mentions the music. Comma-separate several ranges.
 - `Music`: an audio file or `none`. `Music level`: dB relative to the voice (default -18). The mix normalizes to -14 LUFS with a -1.5 dBTP soft ceiling.
 - Scenes must be contiguous: each start equals the previous end, the first starts at 0, and the last ends at the clean video's end.
 - `visual` for a clip: `path [@start] [fit|fill]`, a video or gif. `@start` is the second in the clip to begin from. `fill` crops to cover the panel; `fit` shows the whole clip over a blurred copy. The default picks `fill` when the shapes are close and `fit` otherwise. Clips shorter than their scene loop.

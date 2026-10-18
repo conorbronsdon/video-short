@@ -15,6 +15,8 @@ fi
 [ "$missing" = 1 ] && exit 1
 "$DIR/py" -c "import numpy" || exit 1
 HF=hyperframes@0.8.169
-npx -y $HF browser ensure >/dev/null || { echo "HyperFrames could not download its Chrome"; exit 1; }
-npx -y $HF models install parakeet >/dev/null || { echo "HyperFrames could not download the Parakeet speech model"; exit 1; }
+LOG="$(mktemp)"
+quiet() { "$@" >"$LOG" 2>&1 || { tail -c 1500 "$LOG"; return 1; }; }   # progress spinners stay out of the agent's context
+quiet npx -y $HF browser ensure || { echo "HyperFrames could not download its Chrome"; exit 1; }
+quiet npx -y $HF models install parakeet || { echo "HyperFrames could not download the Parakeet speech model"; exit 1; }
 echo "ready: ffmpeg, yt-dlp, Python, Node $(node -v), HyperFrames with Chrome and Parakeet"

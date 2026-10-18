@@ -9,7 +9,7 @@ Input: a raw talking-head recording. Output: `renders/<project>-vN.mp4` at 1080x
 
 You make every editorial call; the scripts measure, render, and serve the review page. Commands, the `edit.md` format, graphics, and style keys live in [reference.md](reference.md).
 
-On first use, run `setup.sh`. If it lists missing tools, tell the user Video Short needs them and offer to install them with the commands it prints. A `GEMINI_API_KEY` with billing enabled is optional, for generated images, video, and music.
+On first use, run `setup.sh`. If it lists missing tools, tell the user Video Short needs them and offer to install them with the commands it prints. A Gemini API key with billing enabled is optional, for generated images, video, and music. Ask the user to save it in `~/.config/video-short/.env` rather than paste it into chat.
 
 ## 1. Cut
 
