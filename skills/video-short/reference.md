@@ -21,19 +21,20 @@ $S/py $S/frames.py "$P/raw.mp4" "$P/work/frames" --times 12 --grade "eq=contrast
 # Apply Cuts and Grade -> work/clean.mp4, work/transcript_clean.md and .json
 $S/py $S/cut.py "$P"
 
-# 3. Build the HyperFrames project (P/hf) and open it in Studio (run preview in the background)
+# 3. Draft, then review: run review.py in the background and wait for it to print the notes
+$S/py $S/render.py "$P" --draft
+$S/py $S/review.py "$P"            # later rounds: --no-open, the open page reloads itself
+
+# Optional: scrub the timeline in HyperFrames Studio
 $S/py $S/build.py "$P"
 npx -y hyperframes@0.8.169 preview "$P/hf"
 
-# Fallback storyboard: run in the background, wait for it to exit, then read work/feedback.md
-$S/py $S/review.py "$P"
-
-# 4. Render the next version, then check it
+# 4. Render the final, then check it
 $S/py $S/render.py "$P"
 $S/py $S/qa.py "$P"
 ```
 
-`render.py --draft` renders faster at lower quality. `render.py --stills DIR` writes one preview frame per scene. `review.py --build-only` writes `work/storyboard/index.html` without serving it. All scripts accept `--style FILE` where relevant. A 45-second Short renders in about 1.5 minutes on an M-series Mac.
+`render.py --draft` renders faster at lower quality. `review.py` reviews the newest render unless you pass a video, saves the notes to `work/feedback.md`, and uses port 8791 (or any free port). All scripts accept `--style FILE` where relevant. A 45-second Short renders in about 1.5 minutes on an M-series Mac.
 
 Optional music (needs `GEMINI_API_KEY`, free at https://aistudio.google.com/apikey). Lyria streams in real time, so 40 seconds takes about 40 seconds:
 
@@ -120,7 +121,7 @@ A `graphic:` file is a self-contained HyperFrames sub-composition: inline CSS an
 </template>
 ```
 
-Keep motion purposeful: one entrance per element, eased, then hold. Check it in Studio before rendering.
+Keep motion purposeful: one entrance per element, eased, then hold. Check it in the draft before the final render.
 
 ## Layout geometry
 

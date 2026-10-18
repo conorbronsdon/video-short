@@ -1,6 +1,6 @@
 ---
 name: video-short
-description: "Turn a raw talking-head recording into a finished 1080x1920 YouTube Short, Reel, or TikTok. The agent cuts retakes and dead air from a local transcript, plans layouts, B-roll, and motion graphics in a readable edit.md, opens it in HyperFrames Studio for review, then renders captions, clips, and music. Use when someone wants to edit a raw recording into a vertical Short, cut retakes from talking-head footage, or add captions, B-roll, or motion graphics to a Short."
+description: "Turn a raw talking-head recording into a finished 1080x1920 YouTube Short, Reel, or TikTok. The agent cuts retakes and dead air from a local transcript, plans layouts, B-roll, and motion graphics in a readable edit.md, renders a draft the user comments on frame by frame, then renders captions, clips, and music. Use when someone wants to edit a raw recording into a vertical Short, cut retakes from talking-head footage, or add captions, B-roll, or motion graphics to a Short."
 ---
 
 # Video Short
@@ -47,17 +47,17 @@ Add `## Caption fixes` for names the transcript misspells. Add `## Emphasis` for
 
 For music, ask whether the user has a track (from Suno, a library, anywhere) or wants one generated with `music.py`. With neither, leave music out. Leave sound effects off unless the user asks. `Sound effects: subtle` adds quiet taps on cards and numbers and a soft whoosh on B-roll cuts.
 
-## 3. Review in Studio
+## 3. Review the draft
 
-Run `build.py`, then open the project with `npx hyperframes preview` in the background. HyperFrames Studio plays the whole Short with every scene, caption, and graphic on its own track, so the user can scrub to any moment. Ask for notes in chat.
+Run `render.py --draft`, then `review.py` in the background. The review page plays the draft with a timeline split into scenes. The user pauses on any frame, presses C to comment on it, and clicks Send. The script exits and prints each note with its time, scene, and spoken words.
 
-Apply every note to `edit.md` and build again; Studio reloads. Each build rewrites `hf/` from `edit.md`, so if the user drags a clip or caption in Studio, read the new times from `hf/index.html` and carry them into `edit.md` first.
+Apply every note to `edit.md`, render the next draft, and run `review.py --no-open`; the open page reloads itself. Repeat until the user clicks Approve and render final, which sends no notes.
 
-If Studio won't open, or the user wants to write notes scene by scene, run `review.py` in the background instead. It opens a storyboard with a frame and a notes box per scene, then exits with the notes when the user clicks Submit. A submit with no notes approves the plan.
+To scrub the timeline or inspect a graphic frame by frame, run `build.py` and open the project in HyperFrames Studio with `npx hyperframes preview`. Studio is optional; `edit.md` stays the source of truth.
 
 ## 4. Render and check
 
-Run `render.py`, then `qa.py`, and fix any failed check. Look at `opening.jpg`, `contact.jpg`, and `cuts/*.jpg` in `work/qa/`:
+Run `render.py` for the final, then `qa.py`, and fix any failed check. Look at `opening.jpg`, `contact.jpg`, and `cuts/*.jpg` in `work/qa/`:
 
 - Captions never cover the mouth or chin.
 - Every cut lands on the right word, with no blank, frozen, or stretched frames.

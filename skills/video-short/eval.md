@@ -15,7 +15,7 @@ Answer each check yes or no before sharing the render. Fix any no first.
 6. Is the speaker on screen for at least half the Short, with no full-screen B-roll shot longer than about 3.5 seconds?
 7. Does each visual show something the words don't already say?
 8. Does every non-speaker shot move: real footage, a card building row by row, a counting number, or an animated graphic, with no static slide?
-9. Did the user review the Short in Studio or the storyboard, and were all of their notes applied to `edit.md`?
+9. Did the user review a draft on the review page, and were all of their notes applied to `edit.md`?
 
 ## Render
 

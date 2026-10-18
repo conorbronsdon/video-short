@@ -10,7 +10,7 @@ Turn a raw talking-head recording into a finished YouTube Short with B-roll, mot
 
 Editing a 40-second Short still takes an hour: cutting retakes, reframing a landscape shot for vertical, timing captions word by word, finding B-roll, and animating the one stat you mention.
 
-Most AI video tools hide those decisions inside an app you can't steer. Video Short has your coding agent make every editing call in a plain text file you can read and change, then shows you the result on a real video timeline before it renders.
+Most AI video tools hide those decisions inside an app you can't steer. Video Short has your coding agent make every editing call in a plain text file you can read and change, then shows you a draft to comment on frame by frame before the final render.
 
 ## How to install Video Short
 
@@ -46,7 +46,7 @@ The skill works in four steps:
 
 1. **Cut.** It transcribes the recording locally, reads every line, and removes retakes, false starts, and dead air. It picks the framing and color grade by looking at frames from your video.
 2. **Plan.** It writes `edit.md`, a readable plan with each scene's timing, layout, and visual. It pulls clips from your footage, YouTube, X, or the media in a blog post, and animates the rest.
-3. **Review.** It opens the Short in HyperFrames Studio, where you can play it, scrub the timeline, and tell your agent what to change.
+3. **Review.** It renders a draft and opens a review page. Pause on any frame, press C to comment, and click Send. Your agent applies the notes and the page reloads with the next draft.
 4. **Render.** It renders the Short with captions, clips, motion graphics, and music, then checks loudness, sync, and every cut before handing it back.
 
 Each render saves a new version, so you can compare `v1` and `v2`.

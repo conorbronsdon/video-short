@@ -1,11 +1,11 @@
 """Render edit.md into the finished Short: build the HyperFrames project, render it, and add the audio mix.
-usage: render.py PROJECT [--style STYLE_JSON] [--draft] [--stills OUT_DIR]
---draft renders fast at lower quality. --stills writes one preview frame per scene (for the storyboard) instead.
+usage: render.py PROJECT [--style STYLE_JSON] [--draft]
+--draft renders fast at lower quality for review.
 Output: renders/<project>-vN.mp4, never overwriting an earlier version."""
 import argparse, os, re, shutil, subprocess, tempfile
 
 from build import build
-from common import H, W, die, frames, parse_edit, probe, project_paths, run, validate_scenes
+from common import die, project_paths, run
 
 
 def hyperframes(*args):
@@ -26,26 +26,12 @@ def main():
     ap.add_argument("project")
     ap.add_argument("--style")
     ap.add_argument("--draft", action="store_true")
-    ap.add_argument("--stills")
     a = ap.parse_args()
     if not shutil.which("npx"):
         die("HyperFrames needs Node.js 22 or newer: https://nodejs.org")
     hf, mix, dur = build(a.project, a.style)
     hyperframes("lint", hf)
     paths = project_paths(a.project)
-
-    if a.stills:
-        scenes = validate_scenes(parse_edit(paths["edit"]), paths["root"], probe(paths["clean"])[2])
-        os.makedirs(a.stills, exist_ok=True)
-        at = ",".join(f"{(frames(sc['start']) + frames(sc['end'])) / 2 / 30:.3f}" for sc in scenes)
-        with tempfile.TemporaryDirectory() as tmp:
-            hyperframes("snapshot", hf, "-o", tmp, "--at", at, "--no-end", "--keep", "--describe", "false")
-            pngs = sorted((f for f in os.listdir(tmp) if f.startswith("at-")), key=lambda f: float(f[3:-5]))
-            for sc, png in zip(scenes, pngs):
-                run(["ffmpeg", "-v", "error", "-y", "-i", os.path.join(tmp, png), "-vf", f"scale={W // 2}:{H // 2}", "-q:v", "3",
-                     os.path.join(a.stills, f"{sc['id']}.jpg")])
-        print(f"{len(scenes)} scene stills -> {a.stills}")
-        return
 
     with tempfile.TemporaryDirectory() as tmp:
         silent = os.path.join(tmp, "video.mp4")

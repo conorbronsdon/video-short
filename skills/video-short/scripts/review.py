@@ -1,60 +1,192 @@
-"""Build the storyboard from edit.md, open it in the browser, and wait for the user's feedback.
-usage: review.py PROJECT [--style STYLE_JSON] [--no-open] [--build-only] [--timeout 7200]
-Each scene gets a preview frame and its own comment box. Submit saves work/feedback.md and exits,
-printing the feedback. The page also has Copy feedback for pasting into chat if this script is not running."""
-import argparse, html, json, os, re, subprocess, sys, threading, time, webbrowser
+"""Open the draft render for review: one 9:16 player with a scene-band timeline, where the user pauses on any frame,
+comments on it, and clicks Send. Send saves work/feedback.md and this script prints it and exits.
+usage: review.py PROJECT [VIDEO] [--no-open] [--port 8791] [--timeout 7200]
+VIDEO defaults to the newest renders/*.mp4. Pass --no-open after the first round: the open page reloads itself
+when the next draft is ready."""
+import argparse, glob, html, json, os, re, sys, threading, time, webbrowser
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 
 from common import parse_edit, probe, project_paths, validate_scenes
 
-PAGE = """<!doctype html>
-<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Storyboard: __TITLE__</title>
-<style>
-:root{--bg:#0e0e10;--panel:#18181b;--line:#2a2a2e;--text:#f4f4f5;--muted:#a1a1aa;--accent:#3b82f6;--ok:#22c55e}
-*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:15px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",Inter,sans-serif;display:grid;grid-template-columns:340px 1fr;min-height:100vh}
-aside{position:sticky;top:0;height:100vh;padding:20px;border-right:1px solid var(--line);display:flex;flex-direction:column;gap:12px}
-aside h1{font-size:18px;margin:0}aside p{color:var(--muted);margin:0;font-size:13px}
-video{width:100%;aspect-ratio:16/9;background:#000;border-radius:10px}
-main{padding:24px;display:flex;flex-direction:column;gap:14px;max-width:980px}
-.scene{display:grid;grid-template-columns:150px 1fr;gap:18px;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px}
-.scene img{width:150px;aspect-ratio:9/16;object-fit:cover;border-radius:8px;cursor:pointer;display:block}
-.head{display:flex;gap:10px;align-items:center;flex-wrap:wrap}.id{background:var(--accent);color:#fff;font:600 12px ui-monospace,monospace;padding:2px 8px;border-radius:5px}
-.meta{color:var(--muted);font:13px ui-monospace,monospace}.row{margin:6px 0}.row b{color:var(--muted);font-weight:500;margin-right:6px}
-.spoken{font-style:italic}button{background:var(--accent);color:#fff;border:0;border-radius:7px;padding:7px 12px;font-weight:600;cursor:pointer}
-button.ghost{background:transparent;border:1px solid var(--line);color:var(--text)}
-textarea{width:100%;min-height:52px;background:var(--bg);color:var(--text);border:1px solid var(--line);border-radius:8px;padding:8px;font:inherit;resize:vertical}
-textarea:focus{outline:2px solid var(--accent);border-color:transparent}
-.submit{position:sticky;bottom:0;background:var(--bg);padding:14px 0;display:flex;flex-direction:column;gap:10px;border-top:1px solid var(--line)}
-.actions{display:flex;gap:10px;align-items:center;flex-wrap:wrap}#status{color:var(--muted);font-size:13px}#status.ok{color:var(--ok)}
-#copybox{display:none;min-height:140px}
-@media (max-width:800px){body{grid-template-columns:1fr}aside{position:static;height:auto}.scene{grid-template-columns:110px 1fr}.scene img{width:110px}}
-</style></head><body>
-<aside><h1>__TITLE__</h1><p>__SUMMARY__</p><video id="player" src="__VIDEO__" controls playsinline></video>
-<p>Click a frame or Play to hear that scene. Write notes in any scene, then Submit.</p></aside>
-<main>__SCENES__
-<div class="submit"><label for="overall"><b>Overall notes</b></label><textarea id="overall" placeholder="Pacing, music, anything that spans scenes"></textarea>
-<div class="actions"><button id="send">Submit to agent</button><button class="ghost" id="copy">Copy feedback</button><span id="status"></span></div>
-<textarea id="copybox" readonly></textarea></div></main>
-<script>
-const KEY="storyboard:"+location.pathname, v=document.getElementById("player"); let stopAt=null;
-v.addEventListener("timeupdate",()=>{if(stopAt!==null&&v.currentTime>=stopAt){v.pause();stopAt=null}});
-function play(a,b){stopAt=b;v.currentTime=a;v.play()}
-const boxes=[...document.querySelectorAll("textarea[data-scene]"),document.getElementById("overall")];
-try{const saved=JSON.parse(localStorage.getItem(KEY)||"{}");boxes.forEach(b=>{const k=b.dataset.scene||"overall";if(saved[k])b.value=saved[k]})}catch(e){}
-boxes.forEach(b=>b.addEventListener("input",()=>{try{const s={};boxes.forEach(x=>{if(x.value.trim())s[x.dataset.scene||"overall"]=x.value});localStorage.setItem(KEY,JSON.stringify(s))}catch(e){}}));
-function collect(){const scenes={};document.querySelectorAll("textarea[data-scene]").forEach(t=>{if(t.value.trim())scenes[t.dataset.scene]=t.value.trim()});return{overall:document.getElementById("overall").value.trim(),scenes}}
-function asMarkdown(f){let out="# Storyboard feedback\\n";if(f.overall)out+="\\n## Overall\\n"+f.overall+"\\n";for(const[k,val]of Object.entries(f.scenes))out+="\\n## "+k+"\\n"+val+"\\n";return out}
-const status=document.getElementById("status");function say(t,ok){status.textContent=t;status.className=ok?"ok":""}
-document.getElementById("send").onclick=async()=>{const f=collect();if(!f.overall&&!Object.keys(f.scenes).length&&!confirm("No notes written. Approve the storyboard as is?"))return;
-try{const r=await fetch("/feedback",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(f)});if(!r.ok)throw 0;
-say("Sent. Your agent has the notes. You can close this tab.",true);try{localStorage.removeItem(KEY)}catch(e){}}
-catch(e){say("The review script isn't running, so Submit can't reach your agent. Use Copy feedback and paste it into chat.")}};
-document.getElementById("copy").onclick=async()=>{const md=asMarkdown(collect()),box=document.getElementById("copybox");box.value=md;
-try{await navigator.clipboard.writeText(md);say("Copied. Paste it into chat.",true);return}catch(e){}
-box.style.display="block";box.focus();box.select();let ok=false;try{ok=document.execCommand("copy")}catch(e){}
-say(ok?"Copied. Paste it into chat.":"Select all in the box below and copy it.",ok)};
-</script></body></html>"""
+CSS = """
+:root, :root[data-theme="dark"] {
+  --canvas: #171614; --rail: #1f1e1b; --card: #262420; --card-border: #34322d; --hair: #2f2d29;
+  --strong-border: #403d37; --txt: #eae7e0; --strong-txt: #f4f1ea; --mute: #9c968a; --faint: #6e6961;
+  --soft: #2c2a26; --chip: #2e2c27; --input-bg: #1c1b18; --focus: #4d4941; --danger: #d9705f;
+  --btn-bg: #f0ede6; --btn-fg: #1b1a16; --band: #2a2825; --band-alt: #24221f; --band-cur: #3a3631; --pin: #e0a800;
+}
+:root[data-theme="light"] {
+  --canvas: #eceae4; --rail: #fbfaf7; --card: #ffffff; --card-border: #e9e7e0; --hair: #e4e2db;
+  --strong-border: #d9d5c9; --txt: #26241e; --strong-txt: #1b1a16; --mute: #8b877d; --faint: #b6b2a8;
+  --soft: #f2f0ea; --chip: #f4f2ec; --input-bg: #fdfcfa; --focus: #c2beb4; --danger: #b23b2e;
+  --btn-bg: #1b1a16; --btn-fg: #fbfaf7; --band: #dfdcd4; --band-alt: #e6e3dc; --band-cur: #cfcbc1; --pin: #c99500;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+button, textarea { font: inherit; color: inherit; }
+html, body { height: 100%; overflow: hidden; }
+body { background: var(--canvas); color: var(--txt); font: 13px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, sans-serif; -webkit-font-smoothing: antialiased; display: flex; }
+.stage { flex: 1; min-width: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; padding: 20px 28px; }
+video { height: calc(100vh - 140px); aspect-ratio: 9 / 16; background: #000; border-radius: 10px; cursor: pointer; display: block; }
+.controls { width: min(100%, 860px); display: flex; flex-direction: column; gap: 8px; }
+.row { display: flex; align-items: center; gap: 10px; }
+.play { width: 30px; height: 30px; border-radius: 50%; border: 1px solid var(--strong-border); background: var(--card); display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 11px; }
+.play:hover { border-color: var(--focus); }
+.tc { font: 12px ui-monospace, SFMono-Regular, Menlo, monospace; color: var(--strong-txt); }
+.tc span { color: var(--faint); }
+.chip { padding: 2px 8px; border-radius: 999px; background: var(--chip); color: var(--mute); font-size: 11px; font-weight: 600; }
+#bar { position: relative; height: 28px; border-radius: 6px; overflow: hidden; background: var(--band); cursor: pointer; user-select: none; }
+.band { position: absolute; top: 0; bottom: 0; background: var(--band); border-right: 1px solid var(--canvas); font: 10px ui-monospace, monospace; color: var(--faint); padding: 7px 0 0 5px; overflow: hidden; white-space: nowrap; }
+.band:nth-child(even) { background: var(--band-alt); }
+.band.cur { background: var(--band-cur); color: var(--strong-txt); }
+.band.nolabel { color: transparent; }
+.pin { position: absolute; top: 2px; width: 8px; height: 8px; margin-left: -4px; border-radius: 50%; background: var(--pin); z-index: 2; pointer-events: none; }
+#head { position: absolute; top: 0; bottom: 0; width: 2px; margin-left: -1px; background: var(--strong-txt); pointer-events: none; z-index: 3; }
+.rail { flex: none; width: 352px; display: flex; flex-direction: column; border-left: 1px solid var(--hair); background: var(--rail); }
+.rail-scroll { flex: 1; min-height: 0; overflow-y: auto; padding: 16px 12px 12px; }
+.rail-head { display: flex; align-items: center; gap: 7px; padding: 0 4px 10px; }
+.section { font-size: 11px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--mute); }
+.dim { color: var(--faint); font-size: 11px; }
+.icon-btn { width: 26px; height: 26px; display: flex; align-items: center; justify-content: center; border: 1px solid var(--hair); border-radius: 7px; background: var(--soft); font-size: 12.5px; line-height: 1; cursor: pointer; }
+.icon-btn:hover { border-color: var(--strong-border); color: var(--strong-txt); }
+.push { margin-left: auto; }
+.controls { position: relative; }
+.keys { position: absolute; right: 0; bottom: 74px; z-index: 10; width: 250px; padding: 10px 12px; border: 1px solid var(--strong-border); border-radius: 8px; background: var(--card); box-shadow: 0 8px 24px -10px rgba(0, 0, 0, 0.45); color: var(--mute); font-size: 12px; }
+.keys div { display: flex; justify-content: space-between; gap: 12px; padding: 3px 0; }
+kbd { font: 10.5px ui-monospace, monospace; padding: 1px 5px; border: 1px solid var(--hair); border-radius: 4px; background: var(--soft); color: var(--txt); }
+.compose { margin-bottom: 12px; padding: 13px 14px; border: 1px solid var(--strong-border); border-radius: 8px; background: var(--card); box-shadow: 0 4px 14px -8px rgba(27, 26, 22, 0.3); }
+.compose-head { display: flex; align-items: center; gap: 7px; margin-bottom: 9px; }
+textarea { width: 100%; padding: 8px 10px; border: 1px solid var(--hair); border-radius: 6px; background: var(--input-bg); font-size: 13px; line-height: 1.5; resize: none; outline: none; }
+textarea:focus { border-color: var(--focus); background: var(--card); }
+#note { min-height: 72px; }
+.compose-foot { display: flex; align-items: center; gap: 8px; margin-top: 9px; }
+.btn { padding: 6px 12px; border: 1px solid var(--btn-bg); border-radius: 6px; background: var(--btn-bg); color: var(--btn-fg); font-size: 12px; font-weight: 500; cursor: pointer; }
+.btn:disabled { border-color: var(--hair); background: var(--soft); color: var(--faint); cursor: default; }
+.cards { display: flex; flex-direction: column; gap: 8px; }
+.empty { padding: 8px 4px; color: var(--faint); font-size: 12px; }
+.comment { padding: 11px 12px; border: 1px solid var(--card-border); border-radius: 8px; background: var(--card); cursor: pointer; }
+.comment:hover { border-color: var(--strong-border); }
+.comment-head { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+.comment p { font-size: 13px; line-height: 1.5; white-space: pre-wrap; }
+.del { margin-left: auto; border: 0; background: none; color: var(--faint); font-size: 11px; cursor: pointer; }
+.del:hover { color: var(--danger); }
+.rail-foot { flex: none; padding: 12px; border-top: 1px solid var(--hair); }
+#overall { min-height: 58px; margin-bottom: 9px; font-size: 12.5px; resize: vertical; }
+.send { width: 100%; padding: 10px 12px; border: 1px solid var(--btn-bg); border-radius: 6px; background: var(--btn-bg); color: var(--btn-fg); font-size: 12.5px; font-weight: 500; cursor: pointer; }
+#status { margin-top: 8px; min-height: 16px; color: var(--mute); font-size: 11.5px; text-align: center; }
+"""
+
+JS = r"""
+const $ = (id) => document.getElementById(id);
+const v = $("v"), bar = $("bar"), note = $("note"), overall = $("overall");
+const fmt = (t) => `${Math.floor(t / 60)}:${(t % 60).toFixed(2).padStart(5, "0")}`;
+const sceneAt = (t) => SCENES.find((s) => t >= s.start && t < s.end) || SCENES[SCENES.length - 1];
+const store = (k, val) => { try { if (val === undefined) return localStorage.getItem(k); localStorage.setItem(k, val); } catch {} };
+const KEY = "review:" + location.pathname;
+let state; try { state = JSON.parse(store(KEY)) || { comments: [], overall: "" }; } catch { state = { comments: [], overall: "" }; }
+const save = () => store(KEY, JSON.stringify(state));
+overall.value = state.overall || "";
+
+// Theme: dark by default, remembered per browser.
+const setTheme = (t) => { document.documentElement.dataset.theme = t; $("theme").textContent = t === "dark" ? "☀" : "☾"; store("review:theme", t); };
+setTheme(store("review:theme") || "dark");
+$("theme").onclick = () => setTheme(document.documentElement.dataset.theme === "dark" ? "light" : "dark");
+$("keysbtn").onclick = (e) => { e.stopPropagation(); $("keys").hidden = !$("keys").hidden; };
+addEventListener("click", (e) => { if (!$("keys").contains(e.target)) $("keys").hidden = true; });
+addEventListener("keydown", (e) => { if (e.key === "Escape") $("keys").hidden = true; });
+
+SCENES.forEach((s) => {
+  const b = document.createElement("div");
+  b.className = "band"; b.dataset.id = s.id; b.textContent = s.id;
+  b.style.left = (s.start / DUR) * 100 + "%"; b.style.width = ((s.end - s.start) / DUR) * 100 + "%";
+  b.title = `${s.id} · ${s.layout} · ${s.visual}\n“${s.spoken}”`;
+  bar.appendChild(b);
+});
+const fitLabels = () => document.querySelectorAll(".band").forEach((b) => b.classList.toggle("nolabel", b.offsetWidth < 34));
+window.addEventListener("resize", fitLabels); fitLabels();
+
+const seek = (t) => { v.currentTime = Math.max(0, Math.min(DUR - 0.001, t)); };
+function tick() {
+  const t = v.currentTime, s = sceneAt(t);
+  $("tc").innerHTML = `${fmt(t)} <span>/ ${fmt(DUR)}</span>`;
+  $("scene").textContent = `${s.id} · ${s.layout}`;
+  $("at").textContent = `${fmt(t)} · ${s.id}`;
+  $("head").style.left = (t / DUR) * 100 + "%";
+  document.querySelectorAll(".band").forEach((b) => b.classList.toggle("cur", b.dataset.id === s.id));
+  $("play").textContent = v.paused ? "▶" : "❚❚";
+}
+["timeupdate", "seeked", "play", "pause"].forEach((e) => v.addEventListener(e, tick));
+(function loop() { if (!v.paused) tick(); requestAnimationFrame(loop); })();
+const toggle = () => (v.paused ? v.play() : v.pause());
+v.onclick = toggle; $("play").onclick = toggle;
+let drag = false;
+const scrub = (e) => { const r = bar.getBoundingClientRect(); seek(((e.clientX - r.left) / r.width) * DUR); };
+bar.addEventListener("mousedown", (e) => { drag = true; v.pause(); scrub(e); });
+addEventListener("mousemove", (e) => drag && scrub(e));
+addEventListener("mouseup", () => (drag = false));
+
+function render() {
+  document.querySelectorAll(".pin").forEach((p) => p.remove());
+  state.comments.sort((a, b) => a.t - b.t);
+  $("count").textContent = state.comments.length || "";
+  const list = $("list");
+  list.innerHTML = state.comments.length ? "" : '<div class="empty">Pause on a frame and type what should change.</div>';
+  state.comments.forEach((c, i) => {
+    const pin = document.createElement("div");
+    pin.className = "pin"; pin.style.left = (c.t / DUR) * 100 + "%"; bar.appendChild(pin);
+    const el = document.createElement("div");
+    el.className = "comment";
+    el.innerHTML = `<div class="comment-head"><span class="chip">${fmt(c.t)} · ${c.scene}</span><button class="del">Delete</button></div><p></p>`;
+    el.querySelector("p").textContent = c.note;
+    el.onclick = () => { v.pause(); seek(c.t); };
+    el.querySelector(".del").onclick = (e) => { e.stopPropagation(); state.comments.splice(i, 1); save(); render(); };
+    list.appendChild(el);
+  });
+  $("send").textContent = state.comments.length || overall.value.trim() ? "Send notes" : "Approve and render final";
+}
+function add() {
+  const text = note.value.trim();
+  if (!text) return;
+  const t = +v.currentTime.toFixed(3), s = sceneAt(t);
+  state.comments.push({ t, scene: s.id, scene_start: s.start, scene_end: s.end, note: text });
+  note.value = ""; $("add").disabled = true; save(); render(); note.blur();
+}
+note.onfocus = () => v.pause();
+note.oninput = () => ($("add").disabled = !note.value.trim());
+note.onkeydown = (e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); add(); } if (e.key === "Escape") note.blur(); };
+$("add").onclick = add;
+overall.oninput = () => { state.overall = overall.value; save(); render(); };
+
+addEventListener("keydown", (e) => {
+  if (e.target.tagName === "TEXTAREA") return;
+  const step = e.shiftKey ? 1 : 1 / FPS;
+  if (e.code === "Space") { e.preventDefault(); toggle(); }
+  else if (e.key === "ArrowLeft") { e.preventDefault(); v.pause(); seek(v.currentTime - step); }
+  else if (e.key === "ArrowRight") { e.preventDefault(); v.pause(); seek(v.currentTime + step); }
+  else if (e.key === "c") { e.preventDefault(); note.focus(); }
+});
+
+$("send").onclick = async () => {
+  $("send").disabled = true; $("status").textContent = "Sending…";
+  try {
+    const r = await fetch("/api/feedback", { method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ video: v.getAttribute("src").split("?")[0], comments: state.comments, overall: overall.value.trim() }) });
+    if (!r.ok) throw new Error(r.status);
+    state = { comments: [], overall: "" }; overall.value = ""; save(); render();
+    $("status").textContent = "Sent. This page reloads when the next draft is ready.";
+  } catch { $("status").textContent = "Couldn't reach your agent. Ask it to run review.py again; your notes are saved here."; render(); }
+};
+
+// Reload when the page is rebuilt, unless unsent comments are waiting.
+let version = null;
+setInterval(async () => {
+  try {
+    const { version: now } = await (await fetch("/api/version")).json();
+    if (version === null) version = now;
+    else if (now !== version && !state.comments.length && !note.value.trim()) location.reload();
+  } catch {}
+}, 3000);
+render(); tick();
+"""
 
 
 def words_between(words, a, b):
@@ -63,132 +195,185 @@ def words_between(words, a, b):
 
 def describe(vis):
     if not vis:
-        return "Camera"
+        return "camera"
     if vis["type"] == "card":
-        return "Card: " + vis["title"] + (" / " + " / ".join(vis["rows"]) if vis["rows"] else "")
-    return f"Clip: {vis['src']}" + (f" from {vis['start']:g}s" if vis["start"] else "")
+        return "card: " + " / ".join([vis["title"], *vis["rows"]])
+    if vis["type"] == "number":
+        return f"number: {vis['value']}"
+    return f"{vis['type']}: {vis['src']}"
 
 
-def build(paths, style):
+def fmt(t):
+    return f"{int(t // 60)}:{t % 60:05.2f}"
+
+
+def build(paths, video):
     edit = parse_edit(paths["edit"])
-    _, _, duration = probe(paths["clean"])
-    scenes = validate_scenes(edit, paths["root"], duration)
-    stills = os.path.join(paths["work"], "storyboard")
-    cmd = [sys.executable, os.path.join(os.path.dirname(__file__), "render.py"), paths["root"], "--stills", stills]
-    if style:
-        cmd += ["--style", style]
-    r = subprocess.run(cmd, capture_output=True, text=True)
-    if r.returncode:
-        sys.exit(r.stderr or r.stdout)
+    dur = probe(video)[2]
     words = json.load(open(os.path.join(paths["work"], "transcript_clean.json")))
-    bust = int(time.time())
-    cards = []
-    for sc in scenes:
-        a, b = sc["start"], sc["end"]
-        esc = html.escape
-        cards.append(f"""
-<section class="scene"><img src="{sc['id']}.jpg?v={bust}" alt="{esc(sc['id'])} preview" onclick="play({a},{b})">
-<div><div class="head"><span class="id">{esc(sc['id'])}</span><span class="meta">{a:.2f}-{b:.2f}s ({b - a:.1f}s) · {esc(sc['layout'])}</span>
-<button class="ghost" onclick="play({a},{b})">Play</button></div>
-<div class="row"><b>Visual</b>{esc(describe(sc['visual']))}</div>
-<div class="row spoken"><b>Says</b>“{esc(words_between(words, a, b))}”</div>
-{f'<div class="row"><b>Note</b>{esc(sc["note"])}</div>' if sc["note"] else ''}
-<textarea data-scene="{esc(sc['id'])}" placeholder="Notes for {esc(sc['id'])}"></textarea></div></section>""")
-    name = os.path.basename(paths["root"])
-    page = (PAGE.replace("__TITLE__", html.escape(name))
-            .replace("__SUMMARY__", f"{len(scenes)} scenes, {duration:.1f}s")
-            .replace("__VIDEO__", f"../clean.mp4?v={bust}")
-            .replace("__SCENES__", "".join(cards)))
-    out = os.path.join(stills, "index.html")
-    open(out, "w").write(page)
-    return out
+    scenes = [{"id": sc["id"], "start": sc["start"], "end": sc["end"], "layout": sc["layout"], "visual": describe(sc["visual"]),
+               "spoken": words_between(words, sc["start"], sc["end"])}
+              for sc in validate_scenes(edit, paths["root"], probe(paths["clean"])[2])]
+    src = "/" + os.path.relpath(video, paths["root"]) + f"?v={int(os.path.getmtime(video))}"
+    out = os.path.join(paths["work"], "review")
+    os.makedirs(out, exist_ok=True)
+    open(os.path.join(out, "index.html"), "w").write(PAGE.format(css=CSS, js=JS, src=html.escape(src), scenes=json.dumps(scenes), dur=dur))
+    return scenes
 
 
-class Handler(SimpleHTTPRequestHandler):
-    """Serves the project folder (with byte ranges so the video can seek) and receives feedback."""
-    done = None
-    feedback_path = None
+def notes_markdown(data, scenes, video):
+    by_id = {s["id"]: s for s in scenes}
+    lines = [f"# Review notes: {os.path.basename(video)}", ""]
+    for c in data.get("comments", []):
+        s = by_id.get(c["scene"], {})
+        lines += [f"## {fmt(c['t'])} · {c['scene']} ({s.get('layout', '')}, {s.get('visual', '')})",
+                  f"Says: “{s.get('spoken', '')}”", "", c["note"], ""]
+    if data.get("overall"):
+        lines += ["## Overall", data["overall"], ""]
+    if len(lines) == 2:
+        lines.append("Approved with no notes. Render the final.")
+    return "\n".join(lines).strip() + "\n"
 
-    def log_message(self, *args):
-        pass
 
-    def do_POST(self):
-        if self.path != "/feedback":
-            self.send_error(404)
-            return
-        data = json.loads(self.rfile.read(int(self.headers.get("Content-Length", 0))) or b"{}")
-        lines = ["# Storyboard feedback", ""]
-        if data.get("overall"):
-            lines += ["## Overall", data["overall"], ""]
-        for sid, note in data.get("scenes", {}).items():
-            lines += [f"## {sid}", note, ""]
-        if len(lines) == 2:
-            lines.append("Approved with no notes.")
-        open(self.feedback_path, "w").write("\n".join(lines).strip() + "\n")
-        self.send_response(200)
-        self.send_header("Content-Type", "application/json")
-        self.end_headers()
-        self.wfile.write(b'{"ok":true}')
-        Handler.done.set()
+def serve(paths, scenes, video, port, open_browser, timeout):
+    done, feedback = threading.Event(), os.path.join(paths["work"], "feedback.md")
+    page = os.path.join(paths["work"], "review", "index.html")
 
-    def do_GET(self):
-        rng = self.headers.get("Range")
-        path = self.translate_path(self.path.split("?")[0])
-        if not rng or not os.path.isfile(path):
-            return super().do_GET()
-        size = os.path.getsize(path)
-        m = re.match(r"bytes=(\d*)-(\d*)", rng)
-        start = int(m.group(1)) if m and m.group(1) else 0
-        end = min(int(m.group(2)) if m and m.group(2) else size - 1, size - 1)
-        self.send_response(206)
-        self.send_header("Content-Type", self.guess_type(path))
-        self.send_header("Accept-Ranges", "bytes")
-        self.send_header("Content-Range", f"bytes {start}-{end}/{size}")
-        self.send_header("Content-Length", str(end - start + 1))
-        self.end_headers()
-        with open(path, "rb") as f:
-            f.seek(start)
-            left = end - start + 1
-            while left > 0:
-                chunk = f.read(min(1 << 20, left))
-                if not chunk:
-                    break
-                try:
-                    self.wfile.write(chunk)
-                except (BrokenPipeError, ConnectionResetError):
-                    return
-                left -= len(chunk)
+    class Handler(SimpleHTTPRequestHandler):
+        def __init__(self, *a, **k):
+            super().__init__(*a, directory=paths["root"], **k)
+
+        def log_message(self, *a):
+            pass
+
+        def end_headers(self):
+            self.send_header("Cache-Control", "no-store")
+            super().end_headers()
+
+        def reply(self, obj):
+            body = json.dumps(obj).encode()
+            self.send_response(200)
+            self.send_header("Content-Type", "application/json")
+            self.send_header("Content-Length", str(len(body)))
+            self.end_headers()
+            self.wfile.write(body)
+
+        def do_POST(self):
+            if self.path != "/api/feedback":
+                return self.send_error(404)
+            data = json.loads(self.rfile.read(int(self.headers.get("Content-Length", 0))) or b"{}")
+            open(feedback, "w").write(notes_markdown(data, scenes, video))
+            self.reply({"ok": True})
+            done.set()
+
+        def do_GET(self):   # byte ranges, so the video can seek
+            path = self.path.split("?")[0]
+            if path == "/api/version":
+                return self.reply({"version": os.path.getmtime(page)})
+            file, rng = self.translate_path(path), self.headers.get("Range")
+            if not rng or not os.path.isfile(file):
+                return super().do_GET()
+            size = os.path.getsize(file)
+            m = re.match(r"bytes=(\d*)-(\d*)", rng)
+            start = int(m.group(1)) if m and m.group(1) else 0
+            end = min(int(m.group(2)) if m and m.group(2) else size - 1, size - 1)
+            self.send_response(206)
+            self.send_header("Content-Type", self.guess_type(file))
+            self.send_header("Accept-Ranges", "bytes")
+            self.send_header("Content-Range", f"bytes {start}-{end}/{size}")
+            self.send_header("Content-Length", str(end - start + 1))
+            self.end_headers()
+            with open(file, "rb") as f:
+                f.seek(start)
+                left = end - start + 1
+                while left > 0:
+                    chunk = f.read(min(1 << 20, left))
+                    if not chunk:
+                        break
+                    try:
+                        self.wfile.write(chunk)
+                    except (BrokenPipeError, ConnectionResetError):
+                        return
+                    left -= len(chunk)
+
+    if os.path.exists(feedback):
+        os.remove(feedback)
+    try:
+        server = ThreadingHTTPServer(("127.0.0.1", port), Handler)
+    except OSError:   # port busy: use any free one, and open the page since the old tab can't find it
+        server, open_browser = ThreadingHTTPServer(("127.0.0.1", 0), Handler), True
+    url = f"http://127.0.0.1:{server.server_port}/work/review/index.html"
+    threading.Thread(target=server.serve_forever, daemon=True).start()
+    print(f"Review page: {url}\nWaiting for Send (saves work/feedback.md)...", flush=True)
+    if open_browser:
+        webbrowser.open(url)
+    got = done.wait(timeout)
+    time.sleep(0.3)
+    server.shutdown()
+    if not got:
+        sys.exit("No notes before the timeout. Run review.py again; the page keeps unsent notes.")
+    print(open(feedback).read())
+
+
+PAGE = """<!DOCTYPE html>
+<html data-theme="dark"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Review</title>
+<style>{css}</style></head>
+<body>
+  <main class="stage">
+    <video id="v" src="{src}" playsinline preload="auto"></video>
+    <div class="controls">
+      <div class="row"><button id="play" class="play" type="button" aria-label="Play or pause">▶</button><span id="tc" class="tc"></span><span id="scene" class="chip"></span><button id="keysbtn" class="icon-btn push" type="button" aria-label="Keyboard shortcuts">?</button></div>
+      <div id="keys" class="keys" hidden>
+        <div><span>Play or pause</span><kbd>Space</kbd></div>
+        <div><span>One frame</span><span><kbd>←</kbd> <kbd>→</kbd></span></div>
+        <div><span>One second</span><span><kbd>Shift</kbd> + arrows</span></div>
+        <div><span>Comment on this frame</span><kbd>C</kbd></div>
+        <div><span>Add comment</span><kbd>Enter</kbd></div>
+        <div><span>Back to the video</span><kbd>Esc</kbd></div>
+      </div>
+      <div id="bar"><div id="head"></div></div>
+    </div>
+  </main>
+  <aside class="rail">
+    <div class="rail-scroll">
+      <div class="rail-head"><span class="section">Review</span><span id="count" class="dim"></span>
+        <button id="theme" class="icon-btn push" type="button" aria-label="Toggle light or dark mode">☀</button></div>
+      <div class="compose">
+        <div class="compose-head"><span class="chip" id="at">0:00.00</span><span class="dim">Press C to comment on this frame</span></div>
+        <textarea id="note" placeholder="What should change here?"></textarea>
+        <div class="compose-foot"><button id="add" class="btn push" type="button" disabled>Add comment</button></div>
+      </div>
+      <div id="list" class="cards"></div>
+    </div>
+    <div class="rail-foot">
+      <textarea id="overall" placeholder="Overall note (optional)"></textarea>
+      <button id="send" class="send" type="button">Send notes</button>
+      <div id="status"></div>
+    </div>
+  </aside>
+  <script>
+    const SCENES = {scenes};
+    const DUR = {dur}, FPS = 30;
+    {js}
+  </script>
+</body></html>"""
 
 
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("project")
-    ap.add_argument("--style")
+    ap.add_argument("video", nargs="?")
     ap.add_argument("--no-open", action="store_true")
-    ap.add_argument("--build-only", action="store_true")
+    ap.add_argument("--port", type=int, default=8791)
     ap.add_argument("--timeout", type=int, default=7200)
     a = ap.parse_args()
     paths = project_paths(a.project)
-    page = build(paths, a.style)
-    if a.build_only:
-        print(f"Storyboard -> {page}")
-        return
-    Handler.done = threading.Event()
-    Handler.feedback_path = os.path.join(paths["work"], "feedback.md")
-    if os.path.exists(Handler.feedback_path):
-        os.remove(Handler.feedback_path)
-    server = ThreadingHTTPServer(("127.0.0.1", 0), lambda *x, **k: Handler(*x, directory=paths["work"], **k))
-    url = f"http://127.0.0.1:{server.server_port}/storyboard/index.html"
-    threading.Thread(target=server.serve_forever, daemon=True).start()
-    print(f"Storyboard open at {url}\nWaiting for Submit (saves work/feedback.md)...", flush=True)
-    if not a.no_open:
-        webbrowser.open(url)
-    got = Handler.done.wait(a.timeout)
-    time.sleep(0.3)
-    server.shutdown()
-    if not got:
-        sys.exit("No feedback before the timeout. Ask the user to paste notes from Copy feedback instead.")
-    print(open(Handler.feedback_path).read())
+    renders = glob.glob(os.path.join(paths["renders"], "*.mp4"))
+    if not a.video and not renders:
+        sys.exit("No render to review. Run render.py --draft first.")
+    video = os.path.abspath(a.video or max(renders, key=os.path.getmtime))
+    scenes = build(paths, video)
+    serve(paths, scenes, video, a.port, not a.no_open, a.timeout)
 
 
 if __name__ == "__main__":
