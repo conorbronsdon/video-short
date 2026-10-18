@@ -9,7 +9,7 @@ Input: a raw talking-head recording. Output: `renders/<project>-vN.mp4` at 1080x
 
 You make every editorial call. The scripts measure, render, and serve the review page. Commands, the `edit.md` format, graphics, and style keys live in [reference.md](reference.md).
 
-Needs ffmpeg, Python 3.10+, and Node.js 22+ (for HyperFrames, which renders the video). Optional: yt-dlp for web clips, and `GEMINI_API_KEY` with billing enabled for generated images, video, and music.
+On first use, run `setup.sh`. It checks for ffmpeg, yt-dlp, Python, and Node.js 22+, then installs the Python packages and HyperFrames, which renders the video. If it lists missing tools, tell the user Video Short needs them and offer to install them with the commands it prints. A `GEMINI_API_KEY` with billing enabled is optional, for generated images, video, and music.
 
 ## 1. Cut
 

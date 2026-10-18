@@ -1,16 +1,14 @@
 # Video Short
 
-Turn a raw talking-head recording into a finished YouTube Short with B-roll, motion graphics, and captions.
+Turn a raw talking-head recording into a polished video Short, complete with B-roll, motion graphics, captions, music, and more, with your favorite AI agent.
 
-![Raw recording next to the edited Short](assets/before-after.jpg)
-
-<!-- Before publishing: drag assets/before-after.mp4 into this README on GitHub and replace this line and the image above with the user-attachments link it creates. -->
+<!-- Demo video: drag assets/before-after.mp4 into this README on GitHub and put the user-attachments link here. -->
 
 ## Problem
 
-Editing a 40-second Short still takes an hour. You cut retakes, reframe a landscape shot for vertical, time captions word by word, hunt for B-roll, and animate the one stat you mention.
+Every social platform is hungry for video Shorts. But creating a polished 30 to 60 second Short still takes hours. You have to cut filler words and retakes, hunt for compelling B-roll, add motion graphics and captions, and find the right music.
 
-Most AI video tools make those calls inside an app you can't steer. Video Short has your coding agent make every editing call, shows you the plan before it renders, and lets you comment on any frame of the draft until it's right.
+With Video Short, you can turn a raw recording into a polished Short directly in Claude Code, Codex, or your favorite AI agent. It comes with a review interface that lets you give feedback on any frame and iterate until the draft feels right.
 
 ## How to install Video Short
 
@@ -28,11 +26,13 @@ npx skills add petergyang/video-short --skill video-short --global --yes
 
 Video Short runs on your computer and needs:
 
-- **ffmpeg.** On a Mac: `brew install ffmpeg`.
-- **Python 3.10 or newer.** The skill sets up its own environment and downloads a local speech model (about 600 MB) on first run, so transcription stays on your computer.
-- **Node.js 22 or newer.** On a Mac: `brew install node`. It runs [HyperFrames](https://github.com/heygen-com/hyperframes), the free, open-source renderer that turns the edit into video.
-- **Optional: yt-dlp** for pulling clips from YouTube, X, and other sites. On a Mac: `brew install yt-dlp`.
+- **ffmpeg** to cut and encode video.
+- **yt-dlp** to pull B-roll from YouTube, X, and other sites.
+- **Python 3.10 or newer** for transcription, which runs on your computer with a local speech model (about 600 MB).
+- **Node.js 22 or newer** for [HyperFrames](https://github.com/heygen-com/hyperframes), the free, open-source renderer that turns the edit into video.
 - **Optional: A Gemini API key** with billing enabled, to generate images with Nano Banana, video clips with Veo, and music with Lyria. Get a key at [Google AI Studio](https://aistudio.google.com/apikey) and set `GEMINI_API_KEY`.
+
+The first time you use the skill, it checks for these, offers to install anything missing, and sets up HyperFrames for you.
 
 ## How to use Video Short
 
@@ -76,7 +76,7 @@ Fonts, colors, and caption style come from a small `style.json`. Save yours at `
 - [`SKILL.md`](skills/video-short/SKILL.md) contains the editing rules and workflow.
 - [`reference.md`](skills/video-short/reference.md) contains the commands, the `edit.md` format, graphics, and style options.
 - [`eval.md`](skills/video-short/eval.md) contains the checks the skill runs before handing back a video.
-- [`scripts/`](skills/video-short/scripts) contains the scripts for transcription, cutting, generation, rendering, the review page, and QA.
+- [`scripts/`](skills/video-short/scripts) contains the scripts for setup, transcription, cutting, generation, rendering, the review page, and QA.
 
 ## Want more great AI skills?
 
