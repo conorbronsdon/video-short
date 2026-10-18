@@ -40,7 +40,7 @@ Find B-roll in this order: the user's own footage, then official demos and the m
 
 When the user has a Gemini key and a shot has no good footage, propose generating it: a Nano Banana image, a Veo clip, or a Lyria music bed. Generate only what the user approves, because each call costs money.
 
-Add `## Caption fixes` for misspelled names, and `## Emphasis` for the rare term that earns a box in the caption, such as a product name or the main number, so captions stay quiet. For music, use the user's track, a Lyria bed they approve, or none. Lyria sometimes returns slow solo piano, so share a generated bed for a listen and regenerate it if it lacks the groove the user asked for. Leave sound effects off unless the user asks.
+Add `## Caption fixes` for misspelled names, and `## Emphasis` for the rare term that earns a box in the caption, such as a product name or the main number, so captions stay quiet. For music, use the user's track, a Lyria bed they approve, or none. Lyria sometimes returns slow solo piano, so share a generated bed for a listen and regenerate it if it lacks the groove the user asked for. When the user names a song or artist, describe its genre, tempo, and instruments in the Lyria prompt instead of the name. When the speaker mentions the music, raise it there with `Music lift`. Leave sound effects off unless the user asks.
 
 Show the plan in chat and wait for a go:
 
