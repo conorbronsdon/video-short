@@ -73,6 +73,12 @@ textarea:focus { border-color: var(--focus); background: var(--card); }
 #overall { min-height: 58px; margin-bottom: 9px; font-size: 12.5px; resize: vertical; }
 .send { width: 100%; padding: 10px 12px; border: 1px solid var(--btn-bg); border-radius: 6px; background: var(--btn-bg); color: var(--btn-fg); font-size: 12.5px; font-weight: 500; cursor: pointer; }
 #status { margin-top: 8px; min-height: 16px; color: var(--mute); font-size: 11.5px; text-align: center; }
+@media (max-aspect-ratio: 4/5) {   /* phone or portrait window: video and timeline on top, comments below */
+  body { flex-direction: column; }
+  .stage { flex: none; padding: 12px 14px 6px; gap: 8px; }
+  video { height: 46vh; }
+  .rail { width: 100%; flex: 1; min-height: 0; border-left: 0; border-top: 1px solid var(--hair); }
+}
 """
 
 JS = r"""
