@@ -1,7 +1,7 @@
 """Build edit.md into the HyperFrames project (PROJECT/hf) that render.py renders.
 The project holds the cut video, one host per scene (speaker, split, or full-screen visual), animated cards,
 captions on their own track, and the audio mix. Every time comes from the cut timeline in edit.md."""
-import html, json, os, re, shutil, subprocess
+import hashlib, html, json, os, re, shutil, subprocess
 
 import numpy as np
 from common import (FPS, H, SPLIT_TOP, W, die, frames, load_style, parse_edit, parse_framing, probe, project_paths,
@@ -273,16 +273,17 @@ def build(project, style_arg=None):
         def visual(out_h, top):
             v = sc["visual"]
             if v["type"] == "clip":
-                name = f"{sid}.mp4"
+                key = f"{os.path.realpath(v['abs'])}|{os.path.getmtime(v['abs'])}|{v['start']}|{d:.3f}"
+                name = f"{sid}-{hashlib.md5(key.encode()).hexdigest()[:8]}.mp4"   # a changed clip, start, or length gets a fresh file
                 prep_clip(v, d, os.path.join(A, "clips", name))
                 cw, ch, _ = probe(os.path.join(A, "clips", name))
                 fit = v.get("fit") or ("fill" if abs(cw / ch - W / out_h) / (W / out_h) < .45 else "fit")
                 vid = lambda vid_id, cls, extra: (f'<video id="{vid_id}" class="clip {cls}" src="assets/clips/{name}" data-start="{t0:.3f}" data-duration="{d:.3f}" '
                                                   f'data-media-start="0" data-track-index="{40 + i * 2 + extra}" muted playsinline></video>')
                 if fit == "fit":   # letterbox over a blurred still of the same clip
-                    bg = os.path.join(A, "clips", f"{sid}-bg.jpg")
+                    bg = os.path.join(A, "clips", name[:-4] + "-bg.jpg")
                     run(["ffmpeg", "-v", "error", "-y", "-ss", f"{d / 2:.3f}", "-i", os.path.join(A, "clips", name), "-frames:v", "1", "-q:v", "4", bg])
-                    inner = f'<img class="blurbg" src="assets/clips/{sid}-bg.jpg" alt="">' + vid(f"{sid}v", "contain", 0)
+                    inner = f'<img class="blurbg" src="assets/clips/{name[:-4]}-bg.jpg" alt="">' + vid(f"{sid}v", "contain", 0)
                 else:
                     inner = vid(f"{sid}v", "cover", 0)
                 js.append(f'tl.fromTo("#{sid}vis", {{ scale: 1 }}, {{ scale: 1.04, duration: {d:.3f}, ease: "none", immediateRender: false }}, {t0:.3f});')
@@ -335,7 +336,8 @@ def build(project, style_arg=None):
             parts.append(speaker(W, H, 0, zoom, .36))
         elif lay == "split":
             parts.append(visual(SPLIT_TOP, 0))
-            parts.append(speaker(W, H - SPLIT_TOP, SPLIT_TOP, 1.2, .42))
+            # A landscape camera needs a push in to fill the panel; a vertical one already frames head and shoulders.
+            parts.append(speaker(W, H - SPLIT_TOP, SPLIT_TOP, 1.2 if src_w > src_h else 1.0, .42))
         else:
             parts.append(visual(H, 0))
         prev_card = sc["visual"] if sc["visual"] and sc["visual"]["type"] == "card" else None
@@ -419,15 +421,15 @@ html, body {{ margin: 0; width: 100%; height: 100%; overflow: hidden; background
 .cardbg {{ background: {card_bg}; display: flex; justify-content: center; align-items: center; }}
 .card {{ width: 960px; box-sizing: border-box; padding: 52px 56px; border-radius: 28px; background: {panel}; border: 2px solid {border}; }}
 .card.big {{ width: 960px; padding: 64px; }}
-.card .title {{ font: {w_title} 80px/1.1 Ftitle, sans-serif; color: {text}; }}
-.card.big .title {{ font-size: 96px; }}
+.card .title {{ font: {w_title} 100px/1.1 Ftitle, sans-serif; color: {text}; }}
+.card.big .title {{ font-size: 120px; }}
 .card .rows {{ margin-top: 30px; }}
-.card .row {{ display: flex; gap: 30px; align-items: baseline; margin-top: 30px; font: {w_body} 54px/1.25 Fbody, sans-serif; color: {text}; }}
-.card.big .row {{ font-size: 64px; }}
-.card .rn {{ font: {w_num} 44px/1 Fnum, sans-serif; color: {accent}; flex: none; width: 90px; }}
+.card .row {{ display: flex; gap: 30px; align-items: baseline; margin-top: 34px; font: {w_body} 68px/1.2 Fbody, sans-serif; color: {text}; }}
+.card.big .row {{ font-size: 80px; }}
+.card .rn {{ font: {w_num} 56px/1 Fnum, sans-serif; color: {accent}; flex: none; width: 90px; }}
 .numwrap {{ text-align: center; }}
 .bignum {{ font-family: Fnum, sans-serif; font-weight: {w_num}; color: {accent}; line-height: 1; }}
-.numlab {{ margin-top: 28px; font: {w_body} 56px/1.2 Fbody, sans-serif; color: {text}; padding: 0 60px; }}
+.numlab {{ margin-top: 32px; font: {w_body} 76px/1.2 Fbody, sans-serif; color: {text}; padding: 0 60px; }}
 .cap {{ position: absolute; left: 0; width: {W}px; z-index: 50; text-align: center; transform: translateY(-50%); }}
 .cap .band {{ display: inline-block; max-width: 880px; padding: {pad_y}px {pad_x}px; border-radius: {cap_radius}px; background: {cap_box};
              box-shadow: 0 0 0 2px {cap_border}; font: {w_cap} {cap_size}px/1.2 Fcap, sans-serif; color: {cap_color}; }}
