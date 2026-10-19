@@ -307,7 +307,15 @@ def build(project, style_arg=None):
                 js.append(f'tl.fromTo("#{sid}lab", {{ autoAlpha: 0, y: 18 }}, {{ autoAlpha: 1, y: 0, duration: .45, ease: "power3.out", immediateRender: false }}, {t0 + .35:.3f});')
                 sfx.append(("tap", t0 + .1))
                 size = 360 if out_h > 1200 else 280
-                return (f'<div class="panel vis cardbg" style="top:{top}px;height:{out_h}px"><div class="numwrap">'
+                under = ""
+                if v.get("bg"):   # the number sits on a darkened moving clip
+                    bg = v["bg"]
+                    key = f"{os.path.realpath(bg['abs'])}|{os.path.getmtime(bg['abs'])}|{bg['start']}|{d:.3f}"
+                    name = f"{sid}-{hashlib.md5(key.encode()).hexdigest()[:8]}.mp4"
+                    prep_clip(bg, d, os.path.join(A, "clips", name))
+                    under = (f'<video id="{sid}bgv" class="clip cover" src="assets/clips/{name}" data-start="{t0:.3f}" data-duration="{d:.3f}" '
+                             f'data-media-start="0" data-track-index="{40 + i * 2 + 1}" muted playsinline></video><div class="shade"></div>')
+                return (f'<div class="panel vis cardbg" style="top:{top}px;height:{out_h}px">{under}<div class="numwrap">'
                         f'<div id="{sid}num" class="bignum" style="font-size:{size}px">{esc(pre)}0{esc(suf)}</div>'
                         f'<div id="{sid}lab" class="numlab">{esc(v["label"])}</div></div></div>')
             # card: a title with numbered rows. A card that repeats the previous scene's title only animates its new rows.
@@ -427,7 +435,9 @@ html, body {{ margin: 0; width: 100%; height: 100%; overflow: hidden; background
 .card .row {{ display: flex; gap: 30px; align-items: baseline; margin-top: 34px; font: {w_body} 68px/1.2 Fbody, sans-serif; color: {text}; }}
 .card.big .row {{ font-size: 80px; }}
 .card .rn {{ font: {w_num} 56px/1 Fnum, sans-serif; color: {accent}; flex: none; width: 90px; }}
-.numwrap {{ text-align: center; }}
+.numwrap {{ position: relative; text-align: center; }}
+.vis .shade {{ position: absolute; inset: 0; background: rgba(0,0,0,.68); }}
+.bignum, .numlab {{ text-shadow: 0 4px 30px rgba(0,0,0,.6); }}
 .bignum {{ font-family: Fnum, sans-serif; font-weight: {w_num}; color: {accent}; line-height: 1; }}
 .numlab {{ margin-top: 32px; font: {w_body} 76px/1.2 Fbody, sans-serif; color: {text}; padding: 0 60px; }}
 .cap {{ position: absolute; left: 0; width: {W}px; z-index: 50; text-align: center; transform: translateY(-50%); }}

@@ -85,7 +85,7 @@ Sound effects: off
 - Scenes must be contiguous: each start equals the previous end, the first starts at 0, and the last ends at the clean video's end.
 - `visual` for a clip: `path [@start] [fit|fill]`, a video or gif. `@start` is the second in the clip to begin from. `fill` crops to cover the panel; `fit` shows the whole clip over a blurred copy. The default picks `fill` when the shapes are close and `fit` otherwise. Clips shorter than their scene loop.
 - `visual` for a card: `card: Title ; row ; row`. Separate parts with `;`, because `|` ends a table cell. Rows slide in one by one. When the next scene repeats the same title and rows, only its new rows animate, so a list builds across scenes.
-- `visual` for a number: `number: 3x ; label`. The number counts up from zero, keeping any prefix or suffix such as `$`, `%`, or `x`, and the label fades in below.
+- `visual` for a number: `number: 3x ; label` or `number: 3x ; label ; over broll/clip.mp4 @2`. The number counts up from zero, keeping any prefix or suffix such as `$`, `%`, or `x`, and the label fades in below. With `over`, it sits on that clip, darkened.
 - `visual` for a graphic: `graphic: path.html`, a HyperFrames sub-composition you write. See below.
 - `split` and `b-roll` need a visual. `a-roll` and `punch` leave it empty.
 - `## Caption fixes` rows replace words in captions only, matching whole words without case.

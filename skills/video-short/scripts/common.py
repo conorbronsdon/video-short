@@ -189,7 +189,11 @@ def parse_visual(v, line_no):
         parts = [p.strip() for p in v[7:].split(";")]
         if not re.search(r"\d", parts[0]):
             die(f"edit.md line {line_no}: number needs a value with digits, like 'number: 89.5% ; share of voice'")
-        return {"type": "number", "value": parts[0], "label": parts[1] if len(parts) > 1 else ""}
+        vis = {"type": "number", "value": parts[0], "label": parts[1] if len(parts) > 1 else ""}
+        if len(parts) > 2 and parts[2].lower().startswith("over "):   # 'over broll/clip.mp4 @2': count up over a moving clip
+            bg = parse_visual(parts[2][5:], line_no)
+            vis["bg"] = bg if bg and bg["type"] == "clip" else die(f"edit.md line {line_no}: 'over' needs a clip path")
+        return vis
     if v.lower().startswith("graphic:"):
         return {"type": "graphic", "src": v[8:].strip()}
     tokens = v.split()
@@ -226,6 +230,11 @@ def validate_scenes(edit, project, duration):
             vis["abs"] = vis["src"] if os.path.isabs(vis["src"]) else os.path.join(project, vis["src"])
             if not os.path.isfile(vis["abs"]):
                 die(f"edit.md line {sc['line']}: graphic not found: {vis['src']}")
+        if vis and vis.get("bg"):
+            b = vis["bg"]
+            b["abs"] = b["src"] if os.path.isabs(b["src"]) else os.path.join(project, b["src"])
+            if not os.path.isfile(b["abs"]):
+                die(f"edit.md line {sc['line']}: clip not found: {b['src']}")
         if vis and vis["type"] == "clip":
             vis["abs"] = vis["src"] if os.path.isabs(vis["src"]) else os.path.join(project, vis["src"])
             if not os.path.isfile(vis["abs"]):
