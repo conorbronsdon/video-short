@@ -10,6 +10,22 @@ Every social platform is hungry for video shorts, but creating a polished 30-60 
 
 With my video short skill, you can turn a raw recording into a polished short directly in Claude Code, ChatGPT, or your favorite AI agent. It comes with a simple review interface that lets you give feedback on specific frames and iterate until the short feels right.
 
+## What video short can do
+
+Every short cuts between four layouts:
+
+1. **A-roll:** You, full screen.
+2. **Punch:** A tighter shot of you for emphasis.
+3. **Split:** A visual on top, you below.
+4. **B-roll:** A visual full screen while you keep talking.
+
+Here's what the skill can do to create your video:
+
+- **Captions** that match what you say, word for word.
+- **Motion graphics** written in HTML to bring the short to life, like list cards that build as you talk and numbers that count up.
+- **B-roll footage** that's relevant to what you're saying, found on the web.
+- **AI video and music** generated with Gemini Veo and Lyria. This step needs a Gemini API key with billing enabled. You can also add your own video and music.
+
 ## How to install video short
 
 The easiest way to install the skill is to paste this into Claude Code, ChatGPT, or your favorite AI agent:
@@ -48,22 +64,6 @@ The skill will then do 4 things:
 4. **Iterate.** The agent applies your notes and renders the next draft, and the page reloads. Repeat until you click Approve and render final.
 
 Each render saves a new version, so you can compare `v1` and `v2`.
-
-## What video short can do
-
-Every short cuts between four layouts:
-
-1. **A-roll:** You, full screen.
-2. **Punch:** A tighter shot of you for emphasis.
-3. **Split:** A visual on top, you below.
-4. **B-roll:** A visual full screen while you keep talking.
-
-Here's what the skill can do to create your video:
-
-- **Captions** that match what you say, word for word.
-- **Motion graphics** written in HTML to bring the short to life, like list cards that build as you talk and numbers that count up.
-- **B-roll footage** that's relevant to what you're saying, found on the web.
-- **AI video and music** generated with Gemini Veo and Lyria. This step needs a Gemini API key with billing enabled. You can also add your own video and music.
 
 ## Make it yours
 
