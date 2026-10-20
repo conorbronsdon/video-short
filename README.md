@@ -4,8 +4,6 @@ Turn a raw recording into a polished video short, complete with B-roll, motion g
 
 [Watch my video tutorial](https://youtu.be/NWll-9p84b4) to see how I use this skill.
 
-![Four steps: install the skill, upload your raw recording, give feedback, and get a polished short](assets/four-steps.jpg)
-
 ## Problem
 
 Every social platform is hungry for video shorts, but creating a polished 30-60 second short still takes hours to do manually. You have to cut retakes, hunt for compelling B-roll footage, add motion graphics and captions, and find the right music.
@@ -62,18 +60,18 @@ The first time you run the skill, it'll check if you have the following installe
 
 ## How to use video short
 
-To use video short, first record yourself talking. Then open ChatGPT desktop, Claude Code, or your favorite AI tool and point it at the raw video with this prompt:
+![Four steps: install the skill, upload your raw recording, approve the plan, and iterate with feedback](assets/four-steps.jpg)
 
-```text
-/video-short edit my video at [path/to/video.mp4]
-```
+1. **Install.** Paste the install prompt above into Claude Code, ChatGPT, or your favorite AI agent. You only do this once.
+2. **Upload.** Record yourself talking, then point your agent at the raw video:
 
-The skill will then do 4 things:
+   ```text
+   /video-short edit my video at [path/to/video.mp4]
+   ```
 
-1. **Cut.** The agent transcribes the recording, reads every line, and cuts retakes, false starts, and dead air.
-2. **Plan.** It researches the topic, finds B-roll from your footage and the web, and shows you a table of the plan in chat: every scene, what's on screen, and what it wants to generate. Reply "go" or ask for changes.
-3. **Review.** It renders a draft and opens a review page. You can watch the draft short and pause on any frame to leave feedback. Click Send notes when you're done.
-4. **Iterate.** The agent applies your notes and renders the next draft, and the page reloads. Repeat until you click Looks good.
+   It transcribes the recording and cuts retakes, false starts, and dead air.
+3. **Plan.** It researches the topic, finds B-roll from your footage and the web, and shows you a table of every scene in chat: what's on screen, the words spoken, and anything it wants to generate. Reply "go" or ask for changes.
+4. **Iterate.** It renders a draft and opens the review page. Pause on any frame, leave a comment, and click Send notes. The agent applies your notes and the page reloads with the next draft. Repeat until you click Looks good.
 
 Each render saves a new version, so you can compare `v1` and `v2`, plus a small 720p copy in `renders/share/` to send from your phone or email.
 
