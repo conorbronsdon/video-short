@@ -1,33 +1,31 @@
 # Video Short
 
-Turn a raw recording into a polished video short, complete with B-roll, motion graphics, captions, music, and more, with your favorite AI agent.
+Turn a raw recording into a polished video short, complete with B-roll, motion graphics, captions, music, and more using Claude, ChatGPT, Gemini, or your favorite agent.
 
 https://github.com/user-attachments/assets/a4005cf6-e734-4a95-92f0-f5f577bee7c7
 
-[Watch the full tutorial](https://youtu.be/NWll-9p84b4) to see how I use this skill.
+[Watch the full tutorial](https://youtu.be/NWll-9p84b4) to see how I use this skill with a real example.
 
 ## Problem
 
-A polished 30-60 second short still takes hours to edit by hand. You have to cut retakes, hunt for B-roll, add motion graphics and captions, and find the right music.
-
-Video short does that work in your AI agent, and you give feedback on any frame until the short feels right. Everything runs on your computer. The only key is an optional Gemini key for AI-generated video and music.
+This skill makes it easy for you to iterate with AI to create compelling video shorts. It gives you a review panel to give feedback to your favorite AI agent on any frame until the short feels right.
 
 ## What video short can do
 
-Every short cuts between four layouts:
+The skill supports up to 4 different layouts:
 
 1. **A-roll:** You, full screen.
-2. **Punch:** A tighter shot of you for emphasis.
+2. **Motion graphics** to bring the short to life.
 3. **Split:** A visual on top, you below.
 4. **B-roll:** A visual full screen while you keep talking.
 
-Here's what the skill can do to create your video:
+Here's what the skill can add to create your short:
 
 - **Captions** that match what you say, word for word.
 - **Motion graphics** written in HTML to bring the short to life, like list cards that build as you talk and numbers that count up.
-- **B-roll footage** that's relevant to what you're saying, found on the web.
+- **B-roll** found online that's relevant to what you're saying.
 - **AI video and music** generated with Gemini Veo and Lyria. This step needs a Gemini API key with billing enabled. You can also add your own video and music.
-- **A review page** that plays your draft. Pause on any frame, leave a comment pinned to that moment, and send all your notes at once. The agent applies them and the page reloads with the next draft.
+The best part of this skill is it opens a review page that lets you review AI's work and leave comments on any frame. AI will then iterate on the short based on your comments before reloading the next draft on the same review page:
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="assets/review-dark.jpg">
@@ -67,9 +65,9 @@ The first time you run the skill, it'll check if you have the following installe
    /video-short edit my video at [path/to/video.mp4]
    ```
 
-   It transcribes the recording and cuts retakes, false starts, and dead air.
+   It'll transcribe the recording and cut retakes, false starts, and dead air.
 3. **Plan.** It researches the topic, finds B-roll from your footage and the web, and shows you a table of every scene in chat: what's on screen, the words spoken, and anything it wants to generate. Reply "go" or ask for changes.
-4. **Iterate.** It renders a draft and opens the review page. Pause on any frame, leave a comment, and click Send notes. The agent applies your notes and the page reloads with the next draft. Repeat until you click Looks good.
+4. **Iterate.** The agent will render a draft and open the review page. You can pause on any frame, leave a comment, and click Send notes. The agent will then apply your notes before reloading the review page.
 
 Each render saves a new version, so you can compare `v1` and `v2`, plus a small 720p copy in `renders/share/` to send from your phone or email.
 
