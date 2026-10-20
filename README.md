@@ -26,9 +26,7 @@ Here's what the skill can do to create your video:
 - **B-roll footage** that's relevant to what you're saying, found on the web.
 - **AI video and music** generated with Gemini Veo and Lyria. This step needs a Gemini API key with billing enabled. You can also add your own video and music.
 
-<p align="center">
-  <video src="https://github.com/user-attachments/assets/57e35238-80cf-4a78-8560-ef6250357f2c" width="300" controls></video>
-</p>
+https://github.com/user-attachments/assets/57e35238-80cf-4a78-8560-ef6250357f2c
 
 ## How to install video short
 
