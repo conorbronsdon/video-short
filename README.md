@@ -25,6 +25,7 @@ Here's what the skill can add to create your short:
 - **Motion graphics** written in HTML to bring the short to life, like list cards that build as you talk and numbers that count up.
 - **B-roll** found online that's relevant to what you're saying.
 - **AI video and music** generated with Gemini Veo and Lyria. This step needs a Gemini API key with billing enabled. You can also add your own video and music.
+
 The best part of this skill is it opens a review page that lets you review AI's work and leave comments on any frame. AI will then iterate on the short based on your comments before reloading the next draft on the same review page:
 
 <picture>
