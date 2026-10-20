@@ -24,7 +24,8 @@ Answer each check yes or no before sharing the final render. Fix any no first.
 
 ## Review and final
 
-15. Was every note from the review page applied to `edit.md`, and did the user approve the last draft?
-16. Does `qa.py` pass every check?
-17. In the QA frames, does every check in SKILL.md step 4 hold?
-18. Is each emphasis box rare and on a name, number, or main claim?
+15. Before the first review, did the draft pass the step 4 frame checks?
+16. Was every note from the review page applied to `edit.md`, and did the user approve the last draft?
+17. Does `qa.py` pass every check?
+18. In the QA frames, does every check in SKILL.md step 4 hold?
+19. Is each emphasis box rare and on a name, number, or main claim?
