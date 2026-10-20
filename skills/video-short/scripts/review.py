@@ -124,7 +124,7 @@ function tick() {
 (function loop() { if (!v.paused) tick(); requestAnimationFrame(loop); })();
 const toggle = () => (v.paused ? v.play() : v.pause());
 // Playback speed: click to cycle, or < and > to step; remembered per browser.
-const SPEEDS = [0.5, 0.75, 1, 1.25, 1.5, 2];
+const SPEEDS = [0.5, 0.75, 1, 1.25, 1.5, 1.75, 2];
 const setSpeed = (r) => { v.playbackRate = r; $("speed").textContent = r + "×"; store("review:speed", String(r)); };
 setSpeed(Number(store("review:speed")) || 1);
 const stepSpeed = (d) => { const i = SPEEDS.indexOf(v.playbackRate); setSpeed(SPEEDS[Math.max(0, Math.min(SPEEDS.length - 1, (i < 0 ? 2 : i) + d))]); };
