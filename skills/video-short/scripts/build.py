@@ -159,7 +159,7 @@ def caption_chunks(words, fixes, max_words=3, max_chars=18):
 
 
 def caption_y(layout, style):
-    pos = {"a-roll": 1400, "punch": 1400, "split": SPLIT_TOP, "b-roll": 1560}
+    pos = {"a-roll": 1400, "punch": 1400, "split": SPLIT_TOP, "b-roll": 1440}   # B-roll captions clear the Shorts like and comment buttons
     pos.update(style.get("caption_y", {}))
     return pos[layout]
 
@@ -206,6 +206,23 @@ def fit_length(pcm, n):
     return np.vstack([pcm, np.zeros((n - len(pcm), 2))])
 
 
+def duck_curve(voice, n, dip_db=5.0, hop=0.05):
+    """Gain for the music bed: down dip_db while the voice talks, back up in pauses. Fast attack, slow release,
+    so the bed doesn't pump between words."""
+    h = int(hop * SR)
+    frames_ = max(1, n // h)
+    mono = voice[:frames_ * h].mean(axis=1).reshape(frames_, h)
+    db = 10 * np.log10(np.mean(mono ** 2, axis=1) + 1e-12)
+    talk = (db > np.percentile(db, 90) - 25).astype(float)   # within 25 dB of the voice's loud parts counts as speech
+    g = np.empty(frames_)
+    level = 0.0
+    for i, t in enumerate(talk):   # attack in about 0.1s, release over about 0.5s
+        level += (t - level) * (0.5 if t > level else 0.1)
+        g[i] = level
+    gain = 10 ** (-dip_db * g / 20)
+    return np.interp(np.arange(n), np.arange(frames_) * h + h / 2, gain)
+
+
 def mix_audio(clean, music, level_db, duration, out_wav, lifts=()):
     n = int(round(duration * SR))
     voice = fit_length(read_pcm(clean, duration), n)
@@ -221,6 +238,7 @@ def mix_audio(clean, music, level_db, duration, out_wav, lifts=()):
         b = lufs(bed)
         if b > -60:
             bed *= 10 ** ((-14 + level_db - b) / 20)
+        bed *= duck_curve(voice, n)[:, None]
         for a, z in lifts:   # 'Music lift' ranges: the bed rises 9 dB with short ramps, for a beat where the music is the point
             env = np.ones(n)
             i, j, r = int(a * SR), min(n, int(z * SR)), int(0.25 * SR)

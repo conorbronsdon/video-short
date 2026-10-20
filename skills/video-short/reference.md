@@ -84,7 +84,7 @@ Sound effects: off
 - `Framing`: face center as fractions of the source frame width and height.
 - `Sound effects`: `off` (default) or `subtle`: quiet taps when a card, row, or number enters and a soft whoosh on B-roll cuts, synthesized locally.
 - `Music lift`: cut-timeline ranges where the music rises 9 dB for a beat, such as when the speaker mentions the music. Comma-separate several ranges.
-- `Music`: an audio file or `none`. `Music level`: dB relative to the voice (default -18). The mix normalizes to -14 LUFS with a -1.5 dBTP soft ceiling.
+- `Music`: an audio file or `none`. `Music level`: dB relative to the voice (default -18); the bed also dips about 5 dB while the speaker talks and comes back up in pauses. The mix normalizes to -14 LUFS with a -1.5 dBTP soft ceiling.
 - Scenes must be contiguous: each start equals the previous end, the first starts at 0, and the last ends at the clean video's end.
 - `visual` for a clip: `path [@start[-end]] [fit|fill] [zoom X,Y,W[>X,Y,W]] [hold]`, a video or gif. `@start-end` plays that range of the clip. `fill` crops to cover the panel; `fit` shows the whole clip over a blurred copy. The default is `fill` only when the shapes nearly match, so text at the sides survives. A clip shorter than its scene loops, unless `hold` freezes its last frame; give a tiny range such as `@4.30-4.35 hold` to hold one frame. `zoom` shows a window of the clip and eases it from the first region to the second over the scene: X and Y are the window center and W its width, all as fractions of the clip, so `zoom .5,.5,.9>.3,.35,.4` pushes from almost the whole frame into the upper left. Pick a window that holds one complete card or field.
 - `visual` for a page: `page: path [TOP>TOP]`, a PNG from `capture.py`. It fills the panel at full width and drifts down from the first top to the second, in pixels of the 1080-wide capture (default: 160 pixels down from the top). Read the capture first and pick one complete section.
@@ -129,7 +129,7 @@ Keep motion purposeful: one entrance per element, eased, then hold. Check it in 
 - `a-roll`: the camera covers 1080x1920 with the face centered horizontally and 36% down.
 - `punch`: the same, zoomed by `punch_zoom` (default 1.1).
 - `split`: the visual fills y 0 to 880. The speaker fills y 880 to 1920 at 1.2x, face 42% down the panel.
-- Captions sit at y 1400 on speaker shots, on the 880 seam for splits, and at y 1560 on B-roll. Override with `caption_y` in the style.
+- Captions sit at y 1400 on speaker shots, on the 880 seam for splits, and at y 1440 on B-roll, above the like and comment buttons the Shorts and Reels apps draw near the bottom. Override with `caption_y` in the style, and keep any caption above about y 1480.
 
 ## Getting B-roll
 
@@ -159,7 +159,7 @@ Look at a clip before using it: `ffmpeg -ss 2 -i clip.mp4 -frames:v 1 /tmp/look.
   "projects_dir": "~/Videos/shorts",
   "grade": "colortemperature=temperature=6200,eq=contrast=1.04:saturation=1.05",
   "punch_zoom": 1.1,
-  "caption_y": {"a-roll": 1400, "punch": 1400, "split": 880, "b-roll": 1560},
+  "caption_y": {"a-roll": 1400, "punch": 1400, "split": 880, "b-roll": 1440},
   "caption": {"font": "fonts/MyFont.woff2", "weight": 500, "size": 64, "color": "#FFFFFF", "box": "#000000E0",
               "border": "#FFFFFF30", "radius": 18, "pad": [36, 20], "uppercase": true,
               "max_words": 3, "max_chars": 18, "emphasis": "#F59E0B"},
