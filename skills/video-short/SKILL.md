@@ -27,9 +27,9 @@ Run `cut.py`, then read `work/transcript_clean.md`. Fix any clipped word or surv
 
 ## 2. Plan
 
-Research what the Short needs, then write `## Scenes` in `edit.md`, one row per shot, with start and end on spoken words.
+Research what the Short needs, then write `## Scenes` in `edit.md`, one row per shot, with start and end on spoken words. When the user shares a reel they like, study it first with contact sheets and cut strips for its pacing, layouts, and transitions; borrow how it moves, never its words or assets.
 
-- **Hook in the first 3 seconds.** Open on the hook line with the speaker or the strongest visual. Close on the speaker, and when it fits, bring back the hook's visual so the Short comes full circle.
+- **Hook in the first 3 seconds.** Ask whether a viewer would now watch to the end. Open on the hook line with the speaker or the strongest visual, and make it clear with the sound off, since most phone viewers start muted. Plant one question there that the Short answers before it ends. Close on the speaker, and when it fits, bring back the hook's visual so the Short comes full circle.
 - **Layouts:** `a-roll` (full-screen speaker), `punch` (tighter speaker for emphasis), `split` (visual on top, speaker below), `b-roll` (visual full screen).
 - **Keep the speaker present** for at least half the Short, and end each full-screen B-roll shot within about 3.5 seconds, because viewers connect with a face.
 - **Visuals show what the words don't:** the product doing the thing, the result, the proof. Captions already carry the words. Show the real product or UI, captured from the actual screen, and mock it up only when the real one isn't available. Never invent numbers or results.
@@ -37,7 +37,7 @@ Research what the Short needs, then write `## Scenes` in `edit.md`, one row per 
 - **Readable and clean.** A graphic fills its panel, with text a viewer can read on a phone at a glance. Never put a card or overlay over the speaker's face. Never show another captioned video full screen under this Short's captions.
 - **Pace:** Change the shot every few seconds, since a phone viewer swipes away from a static frame. When the speaker names several things in a row, give each its own clip or card row on its spoken word. Use each clip once.
 
-Find B-roll in this order: the user's own footage, then official demos and the media in posts or launch pages about the topic. Trim each clip to its useful seconds and crop until it reads on a phone. Keep every line of on-screen text whole: capture web pages at phone width and drift down one complete section instead of panning across it, and crop product UI at component edges. Use footage the user has the right to use.
+Find B-roll in this order: the user's own footage, then official demos and the media in posts or launch pages about the topic. Trim each clip to its useful seconds and crop until it reads on a phone. Keep every line of on-screen text whole: capture web pages at phone width and drift down one complete section instead of panning across it, and crop product UI at component edges. Use footage the user has the right to use. Show a brand's logo only from its official file, never redrawn or generated; without one, write the name.
 
 When the user has a Gemini key and a shot has no good footage, propose generating it: a Nano Banana image, a Veo clip, or a Lyria music bed. Generate only what the user approves, because each call costs money.
 
