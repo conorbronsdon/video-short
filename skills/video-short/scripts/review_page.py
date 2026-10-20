@@ -36,7 +36,8 @@ video { max-height: calc(100vh - 140px); max-width: 100%; width: auto; height: a
 .band:nth-child(even) { background: var(--band-alt); }
 .band.cur { background: var(--band-cur); color: var(--strong-txt); }
 .band.nolabel { color: transparent; }
-.pin { position: absolute; top: 2px; width: 8px; height: 8px; margin-left: -4px; border-radius: 50%; background: var(--pin); z-index: 2; pointer-events: none; }
+.pin { position: absolute; top: 2px; width: 8px; height: 8px; margin-left: -4px; border-radius: 50%; background: var(--pin); z-index: 4; cursor: pointer; }
+.pin:hover { transform: scale(1.4); }
 #head { position: absolute; top: 0; bottom: 0; width: 2px; margin-left: -1px; background: var(--strong-txt); pointer-events: none; z-index: 3; }
 .rail { flex: none; width: 352px; display: flex; flex-direction: column; border-left: 1px solid var(--hair); background: var(--rail); }
 .rail-scroll { flex: 1; min-height: 0; overflow-y: auto; padding: 16px 12px 12px; }
@@ -64,13 +65,19 @@ textarea:focus { border-color: var(--focus); background: var(--card); }
 .empty { padding: 8px 4px; color: var(--faint); font-size: 12px; }
 .comment { padding: 11px 12px; border: 1px solid var(--card-border); border-radius: 8px; background: var(--card); cursor: pointer; }
 .comment:hover { border-color: var(--strong-border); }
+.comment.now { border-color: var(--pin); }
+.comment .del { opacity: 0; transition: opacity .12s; }
+.comment:hover .del { opacity: 1; }
 .comment-head { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
 .comment p { font-size: 13px; line-height: 1.5; white-space: pre-wrap; }
 .del { margin-left: auto; border: 0; background: none; color: var(--faint); font-size: 11px; cursor: pointer; }
 .del:hover { color: var(--danger); }
-.rail-foot { flex: none; padding: 12px; border-top: 1px solid var(--hair); }
+.rail-foot { flex: none; padding: 12px; border-top: 1px solid var(--hair); display: flex; flex-direction: column; gap: 8px; }
+#overall { min-height: 38px; max-height: 120px; font-size: 12.5px; }
+.key { margin-left: 6px; opacity: .6; font-size: 11px; }
+.btn:not(:disabled) { cursor: pointer; }
 .send { width: 100%; padding: 10px 12px; border: 1px solid var(--btn-bg); border-radius: 6px; background: var(--btn-bg); color: var(--btn-fg); font-size: 12.5px; font-weight: 500; cursor: pointer; }
-#status { margin-top: 8px; min-height: 16px; color: var(--mute); font-size: 11.5px; text-align: center; }
+#status { min-height: 16px; color: var(--mute); font-size: 11.5px; text-align: center; }
 @media (max-aspect-ratio: 4/5) {   /* phone or portrait window: video and timeline on top, comments below */
   body { flex-direction: column; }
   .stage { flex: none; padding: 12px 14px 6px; gap: 8px; }
@@ -83,10 +90,13 @@ JS = r"""
 const $ = (id) => document.getElementById(id);
 const v = $("v"), bar = $("bar"), note = $("note");
 const fmt = (t) => `${Math.floor(t / 60)}:${(t % 60).toFixed(2).padStart(5, "0")}`;
+// Scene ids like "s01" display as "s1".
+const short = (id) => String(id).replace(/^s0+(?=\d)/, "s");
 const sceneAt = (t) => SCENES.find((s) => t >= s.start && t < s.end) || SCENES[SCENES.length - 1];
 const store = (k, val) => { try { if (val === undefined) return localStorage.getItem(k); localStorage.setItem(k, val); } catch {} };
 const KEY = "review:" + location.pathname;
 let state; try { state = JSON.parse(store(KEY)) || { comments: [] }; } catch { state = { comments: [] }; }
+state.overall = state.overall || "";
 const save = () => store(KEY, JSON.stringify(state));
 
 // Theme: dark by default, remembered per browser.
@@ -99,9 +109,9 @@ addEventListener("keydown", (e) => { if (e.key === "Escape") $("keys").hidden = 
 
 SCENES.forEach((s) => {
   const b = document.createElement("div");
-  b.className = "band"; b.dataset.id = s.id; b.textContent = s.id;
+  b.className = "band"; b.dataset.id = s.id; b.textContent = short(s.id);
   b.style.left = (s.start / DUR) * 100 + "%"; b.style.width = ((s.end - s.start) / DUR) * 100 + "%";
-  b.title = `${s.id} · ${s.layout} · ${s.visual}\n“${s.spoken}”`;
+  b.title = `${short(s.id)} · ${s.layout} · ${s.visual}\n“${s.spoken}”`;
   bar.appendChild(b);
 });
 const fitLabels = () => document.querySelectorAll(".band").forEach((b) => b.classList.toggle("nolabel", b.offsetWidth < 34));
@@ -111,8 +121,8 @@ const seek = (t) => { v.currentTime = Math.max(0, Math.min(DUR - 0.001, t)); };
 function tick() {
   const t = v.currentTime, s = sceneAt(t);
   $("tc").innerHTML = `${fmt(t)} <span>/ ${fmt(DUR)}</span>`;
-  $("scene").textContent = `${s.id} · ${s.layout}`;
-  $("at").textContent = `${fmt(t)} · ${s.id}`;
+  $("scene").textContent = `${short(s.id)} · ${s.layout}`;
+  $("at").textContent = `${fmt(t)} · ${short(s.id)}`;
   $("head").style.left = (t / DUR) * 100 + "%";
   document.querySelectorAll(".band").forEach((b) => b.classList.toggle("cur", b.dataset.id === s.id));
   $("play").textContent = v.paused ? "▶" : "❚❚";
@@ -141,20 +151,28 @@ function render() {
   state.comments.sort((a, b) => a.t - b.t);
   $("count").textContent = state.comments.length || "";
   const list = $("list");
-  list.innerHTML = state.comments.length ? "" : '<div class="empty">Pause on a frame and type what should change.</div>';
+  list.innerHTML = "";
   state.comments.forEach((c, i) => {
     const pin = document.createElement("div");
     pin.className = "pin"; pin.style.left = (c.t / DUR) * 100 + "%"; bar.appendChild(pin);
     const el = document.createElement("div");
     el.className = "comment";
-    el.innerHTML = `<div class="comment-head"><span class="chip">${fmt(c.t)} · ${c.scene}</span><button class="del">Delete</button></div><p></p>`;
+    el.innerHTML = `<div class="comment-head"><span class="chip">${fmt(c.t)} · ${short(c.scene)}</span><button class="del">Delete</button></div><p></p>`;
     el.querySelector("p").textContent = c.note;
     el.onclick = () => seek(c.t);
+    pin.title = c.note; pin.onclick = (e) => { e.stopPropagation(); seek(c.t); };
+    el.dataset.t = c.t;
     el.querySelector(".del").onclick = (e) => { e.stopPropagation(); state.comments.splice(i, 1); save(); render(); };
     list.appendChild(el);
   });
-  $("send").textContent = state.comments.length ? "Send notes" : "Approve and render final";
+  updateSend();
 }
+const hasNotes = () => state.comments.length > 0 || state.overall.trim() !== "";
+const updateSend = () => { $("send").textContent = hasNotes() ? "Send notes" : "Looks good"; };
+$("overall").value = state.overall;
+$("overall").oninput = () => { state.overall = $("overall").value; save(); updateSend(); };
+// Highlight the comment nearest the playhead.
+v.addEventListener("timeupdate", () => document.querySelectorAll(".comment").forEach((el) => el.classList.toggle("now", Math.abs(+el.dataset.t - v.currentTime) < 1.5)));
 function add() {
   const text = note.value.trim();
   if (!text) return;
@@ -165,7 +183,8 @@ function add() {
 // Commenting never pauses: the note keeps the time you started typing.
 note.onfocus = () => { if (!note.value.trim()) note.dataset.t = v.currentTime; };
 note.oninput = () => ($("add").disabled = !note.value.trim());
-note.onkeydown = (e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); add(); } if (e.key === "Escape") note.blur(); };
+note.onkeydown = (e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); add(); } if (e.key === "Escape") { note.value = ""; delete note.dataset.t; $("add").disabled = true; note.blur(); } };
+$("overall").onkeydown = (e) => { if (e.key === "Escape") $("overall").blur(); };
 $("add").onclick = add;
 
 addEventListener("keydown", (e) => {
@@ -183,11 +202,13 @@ $("send").onclick = async () => {
   $("send").disabled = true; $("status").textContent = "Sending…";
   try {
     const r = await fetch("/api/feedback", { method: "POST", headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ video: v.getAttribute("src").split("?")[0], comments: state.comments }) });
+      body: JSON.stringify({ video: v.getAttribute("src").split("?")[0], comments: state.comments, overall: state.overall.trim() }) });
     if (!r.ok) throw new Error(r.status);
-    state = { comments: [] }; save(); render();
-    $("status").textContent = "Sent. This page reloads when the next draft is ready.";
-  } catch { $("status").textContent = "Couldn't reach your agent. Ask it to reopen the review page; your notes are saved here."; render(); }
+    const approved = !hasNotes();
+    state = { comments: [], overall: "" }; $("overall").value = ""; save(); render();
+    $("status").textContent = approved ? "Approved. Your agent has it." : "Sent. This page reloads when the next draft is ready.";
+    $("send").disabled = false;
+  } catch { $("status").textContent = "Couldn't reach your agent. Ask it to reopen the review page; your notes are saved here."; render(); $("send").disabled = false; }
 };
 
 // Reload when the page is rebuilt, unless unsent comments are waiting.
@@ -196,7 +217,7 @@ setInterval(async () => {
   try {
     const { version: now } = await (await fetch("/api/version")).json();
     if (version === null) version = now;
-    else if (now !== version && !state.comments.length && !note.value.trim()) location.reload();
+    else if (now !== version && !hasNotes() && !note.value.trim()) location.reload();
   } catch {}
 }, 3000);
 render(); tick();
@@ -205,6 +226,11 @@ render(); tick();
 
 def words_between(words, a, b):
     return " ".join(w["text"] for w in words if w["end"] > a + 0.04 and w["start"] < b - 0.04)
+
+
+def short(scene_id):
+    """Display "s01" as "s1"."""
+    return re.sub(r"^s0+(?=\d)", "s", str(scene_id))
 
 
 def fmt(t):
@@ -234,12 +260,12 @@ def notes_markdown(data, scenes, video):
     lines = [f"# Review notes: {os.path.basename(video)}", ""]
     for c in data.get("comments", []):
         s = by_id.get(c["scene"], {})
-        lines += [f"## {fmt(c['t'])} · {c['scene']} ({s.get('layout', '')}, {s.get('visual', '')})",
+        lines += [f"## {fmt(c['t'])} · {short(c['scene'])} ({s.get('layout', '')}, {s.get('visual', '')})",
                   f"Says: “{s.get('spoken', '')}”", "", c["note"], ""]
     if data.get("overall"):
         lines += ["## Overall", data["overall"], ""]
     if len(lines) == 2:
-        lines.append("Approved with no notes. Render the final.")
+        lines.append("Looks good. No notes.")
     return "\n".join(lines).strip() + "\n"
 
 
@@ -324,7 +350,7 @@ def serve(root, page, feedback, scenes, video, port, open_browser, timeout):
 
 
 PAGE = """<!DOCTYPE html>
-<html data-theme="dark"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Review</title>
+<html data-theme="dark"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Video review</title>
 <style>{css}</style></head>
 <body>
   <main class="stage">
@@ -345,17 +371,18 @@ PAGE = """<!DOCTYPE html>
   </main>
   <aside class="rail">
     <div class="rail-scroll">
-      <div class="rail-head"><span class="section">Review</span><span id="count" class="dim"></span>
+      <div class="rail-head"><span class="section">Video review</span><span id="count" class="dim"></span>
         <button id="theme" class="icon-btn push" type="button" aria-label="Toggle light or dark mode">☀</button></div>
       <div class="compose">
-        <div class="compose-head"><span class="chip" id="at">0:00.00</span><span class="dim">Press C to comment on this frame</span></div>
+        <div class="compose-head"><span class="chip" id="at">0:00.00</span></div>
         <textarea id="note" placeholder="What should change here?"></textarea>
-        <div class="compose-foot"><button id="add" class="btn push" type="button" disabled>Add comment</button></div>
+        <div class="compose-foot"><button id="add" class="btn push" type="button" disabled>Add comment<span class="key">⏎</span></button></div>
       </div>
       <div id="list" class="cards"></div>
     </div>
     <div class="rail-foot">
-      <button id="send" class="send" type="button">Send notes</button>
+      <textarea id="overall" placeholder="Overall note (optional)"></textarea>
+      <button id="send" class="send" type="button">Looks good</button>
       <div id="status"></div>
     </div>
   </aside>

@@ -53,7 +53,7 @@ Show the plan in chat and wait for a go:
 
 Run `render.py --draft`, then `review.py` in the background. The review page plays the draft on a timeline split into scenes. The user pauses on any frame, presses C to comment, and clicks Send. The script exits and prints each note with its time, scene, and spoken words.
 
-Apply every note to `edit.md`, render the next draft, and run `review.py --no-open`; the open page reloads itself. Repeat until the user clicks Approve and render final.
+Apply every note to `edit.md`, render the next draft, and run `review.py --no-open`; the open page reloads itself. Repeat until the user clicks Looks good.
 
 ## 4. Final
 
