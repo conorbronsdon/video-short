@@ -26,7 +26,8 @@ button, textarea { font: inherit; color: inherit; }
 html, body { height: 100%; overflow: hidden; }
 body { background: var(--canvas); color: var(--txt); font: 13px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, sans-serif; -webkit-font-smoothing: antialiased; display: flex; }
 .stage { flex: 1; min-width: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; padding: 20px 28px; }
-video { height: calc(100vh - 140px); aspect-ratio: 9 / 16; background: #000; border-radius: 10px; cursor: pointer; display: block; }
+video { max-height: calc(100vh - 140px); max-width: 100%; width: auto; height: auto; background: #000; border-radius: 10px; cursor: pointer; display: block; }   /* the video's own shape: vertical Shorts and landscape videos both fit */
+.stage video.wide { width: 100%; height: auto; }
 .controls { width: min(100%, 860px); display: flex; flex-direction: column; gap: 8px; }
 .row { display: flex; align-items: center; gap: 10px; }
 .play { width: 30px; height: 30px; border-radius: 50%; border: 1px solid var(--strong-border); background: var(--card); display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 11px; }
@@ -49,7 +50,7 @@ video { height: calc(100vh - 140px); aspect-ratio: 9 / 16; background: #000; bor
 .icon-btn { width: 26px; height: 26px; display: flex; align-items: center; justify-content: center; border: 1px solid var(--hair); border-radius: 7px; background: var(--soft); font-size: 12.5px; line-height: 1; cursor: pointer; }
 .icon-btn:hover { border-color: var(--strong-border); color: var(--strong-txt); }
 .push { margin-left: auto; }
-.speed { min-width: 46px; padding: 3px 9px; border: 1px solid var(--strong-border); border-radius: 999px; background: var(--card); font: 600 11.5px ui-monospace, monospace; color: var(--strong-txt); cursor: pointer; }
+.speed { padding: 3px 22px 3px 10px; border: 1px solid var(--strong-border); border-radius: 999px; background: var(--card) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='5'%3E%3Cpath d='M0 0l4 5 4-5z' fill='%239c968a'/%3E%3C/svg%3E") no-repeat right 9px center; font: 600 11.5px ui-monospace, monospace; color: var(--strong-txt); cursor: pointer; appearance: none; -webkit-appearance: none; }
 .speed:hover { border-color: var(--focus); }
 .controls { position: relative; }
 .keys { position: absolute; right: 0; bottom: 74px; z-index: 10; width: 250px; padding: 10px 12px; border: 1px solid var(--strong-border); border-radius: 8px; background: var(--card); box-shadow: 0 8px 24px -10px rgba(0, 0, 0, 0.45); color: var(--mute); font-size: 12px; }
@@ -77,7 +78,7 @@ textarea:focus { border-color: var(--focus); background: var(--card); }
 @media (max-aspect-ratio: 4/5) {   /* phone or portrait window: video and timeline on top, comments below */
   body { flex-direction: column; }
   .stage { flex: none; padding: 12px 14px 6px; gap: 8px; }
-  video { height: 46vh; }
+  video { max-height: 46vh; }
   .rail { width: 100%; flex: 1; min-height: 0; border-left: 0; border-top: 1px solid var(--hair); }
 }
 """
@@ -125,10 +126,13 @@ function tick() {
 const toggle = () => (v.paused ? v.play() : v.pause());
 // Playback speed: click to cycle, or < and > to step; remembered per browser.
 const SPEEDS = [0.5, 0.75, 1, 1.25, 1.5, 1.75, 2];
-const setSpeed = (r) => { v.playbackRate = r; $("speed").textContent = r + "×"; store("review:speed", String(r)); };
+const setSpeed = (r) => { v.playbackRate = r; $("speed").value = String(r); store("review:speed", String(r)); };
 setSpeed(Number(store("review:speed")) || 1);
 const stepSpeed = (d) => { const i = SPEEDS.indexOf(v.playbackRate); setSpeed(SPEEDS[Math.max(0, Math.min(SPEEDS.length - 1, (i < 0 ? 2 : i) + d))]); };
-$("speed").onclick = () => setSpeed(SPEEDS[(SPEEDS.indexOf(v.playbackRate) + 1) % SPEEDS.length]);
+$("speed").onchange = (e) => { setSpeed(Number(e.target.value)); e.target.blur(); };
+// A landscape video fills the stage width; a vertical one keeps its height.
+v.addEventListener("loadedmetadata", () => v.classList.toggle("wide", v.videoWidth > v.videoHeight));
+v.addEventListener("ratechange", () => { if (Number($("speed").value) !== v.playbackRate) $("speed").value = String(v.playbackRate); });
 v.onclick = toggle; $("play").onclick = toggle;
 let drag = false;
 const scrub = (e) => { const r = bar.getBoundingClientRect(); seek(((e.clientX - r.left) / r.width) * DUR); };
@@ -168,7 +172,7 @@ note.onkeydown = (e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefau
 $("add").onclick = add;
 
 addEventListener("keydown", (e) => {
-  if (e.target.tagName === "TEXTAREA") return;
+  if (e.target.tagName === "TEXTAREA" || e.target.tagName === "SELECT") return;
   const step = e.shiftKey ? 1 : 1 / FPS;
   if (e.code === "Space") { e.preventDefault(); toggle(); }
   else if (e.key === "ArrowLeft") { e.preventDefault(); v.pause(); seek(v.currentTime - step); }
@@ -335,7 +339,7 @@ PAGE = """<!DOCTYPE html>
   <main class="stage">
     <video id="v" src="{src}" playsinline preload="auto"></video>
     <div class="controls">
-      <div class="row"><button id="play" class="play" type="button" aria-label="Play or pause">▶</button><span id="tc" class="tc"></span><span id="scene" class="chip"></span><button id="speed" class="speed" type="button" aria-label="Playback speed">1×</button><button id="keysbtn" class="icon-btn push" type="button" aria-label="Keyboard shortcuts">?</button></div>
+      <div class="row"><button id="play" class="play" type="button" aria-label="Play or pause">▶</button><span id="tc" class="tc"></span><span id="scene" class="chip"></span><select id="speed" class="speed" aria-label="Playback speed"><option value="0.5">0.5×</option><option value="0.75">0.75×</option><option value="1">Normal</option><option value="1.25">1.25×</option><option value="1.5">1.5×</option><option value="1.75">1.75×</option><option value="2">2×</option></select><button id="keysbtn" class="icon-btn push" type="button" aria-label="Keyboard shortcuts">?</button></div>
       <div id="keys" class="keys" hidden>
         <div><span>Play or pause</span><kbd>Space</kbd></div>
         <div><span>One frame</span><span><kbd>←</kbd> <kbd>→</kbd></span></div>
