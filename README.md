@@ -6,9 +6,9 @@ Turn a raw recording into a polished video short, complete with B-roll, motion g
 
 ## Problem
 
-Every social platform is hungry for video shorts, but creating a polished 30-60 second short still takes hours to do manually. You have to cut retakes, hunt for compelling B-roll footage, add motion graphics and captions, and find the right music.
+A polished 30-60 second short still takes hours to edit by hand. You have to cut retakes, hunt for B-roll, add motion graphics and captions, and find the right music.
 
-With my video short skill, you can turn a raw recording into a polished short directly in Claude Code, ChatGPT, or your favorite AI agent. It comes with a simple review interface that lets you give feedback on specific frames and iterate until the short feels right.
+Video short does that work in your AI agent, and you give feedback on any frame until the short feels right. Everything runs on your computer. The only key is an optional Gemini key for AI-generated video and music.
 
 ## What video short can do
 
