@@ -177,7 +177,8 @@ def parse_edit(path):
 
 
 def parse_visual(v, line_no):
-    """'broll/x.mp4 @1.2 fit' -> clip; 'card: Title ; row ; row' -> card; 'number: 89.5% ; label' -> number;
+    """'broll/x.mp4 @1.2-4 fit zoom .5,.5,.8>.3,.4,.4 hold' -> clip; 'page: broll/site.png 300>700' -> a page capture
+    that drifts down; 'card: Title ; row ; row' -> card; 'number: 89.5% ; label' -> number;
     'graphic: graphics/x.html' -> a HyperFrames sub-composition the agent wrote; '' -> none."""
     v = v.strip()
     if not v:
@@ -196,13 +197,37 @@ def parse_visual(v, line_no):
         return vis
     if v.lower().startswith("graphic:"):
         return {"type": "graphic", "src": v[8:].strip()}
+    if v.lower().startswith("page:"):   # a phone-width page capture, shown full width and drifting down
+        tokens = v[5:].split()
+        page = {"type": "clip", "src": tokens[0], "start": 0.0, "end": None, "fit": "fill", "page": (0.0, 160.0)}
+        if len(tokens) > 1:
+            m = re.fullmatch(r"(\d+(?:\.\d+)?)(?:>(\d+(?:\.\d+)?))?", tokens[1])
+            if not m:
+                die(f"edit.md line {line_no}: page drift is 'TOP>TOP' in pixels of the 1080-wide capture, like 300>700")
+            y0 = float(m.group(1))
+            page["page"] = (y0, float(m.group(2)) if m.group(2) else y0 + 160)
+        return page
     tokens = v.split()
-    clip = {"type": "clip", "src": tokens[0], "start": 0.0, "fit": None}
-    for t in tokens[1:]:
+    clip = {"type": "clip", "src": tokens[0], "start": 0.0, "end": None, "fit": None, "zoom": None, "hold": False}
+    it = iter(tokens[1:])
+    for t in it:
         if t.startswith("@"):
-            clip["start"] = _num(t[1:], line_no, "clip start")
+            a, _, b = t[1:].partition("-")
+            clip["start"] = _num(a, line_no, "clip start")
+            clip["end"] = _num(b, line_no, "clip end") if b else None
         elif t in ("fit", "fill"):
             clip["fit"] = t
+        elif t == "hold":
+            clip["hold"] = True
+        elif t == "zoom":
+            spec = next(it, "")
+            try:
+                ends = [tuple(float(x) for x in part.split(",")) for part in spec.split(">")]
+                assert len(ends) in (1, 2) and all(len(e) == 3 and 0 < e[2] <= 1.5 for e in ends)
+            except (ValueError, AssertionError):
+                die(f"edit.md line {line_no}: zoom is 'X,Y,W' or 'X,Y,W>X,Y,W': the center and the width shown, as fractions of the clip")
+            clip["zoom"] = (ends[0], ends[-1])
+            clip["fit"] = "fill"
     return clip
 
 

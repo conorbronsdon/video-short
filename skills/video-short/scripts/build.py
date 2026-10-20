@@ -32,13 +32,54 @@ def speaker_box(src_w, src_h, fx, fy, out_w, out_h, zoom, face_at):
     return -x, -y, sw, sh, fx * sw - x, fy * sh - y   # left, top, width, height, face point in the panel
 
 
-def prep_clip(vis, dur, out):
-    """Trim (and loop if short) a clip to exactly the scene's length, muted, at 30 fps, so seeks are exact."""
+EASE = "(3*pow(min(t/{d},1),2)-2*pow(min(t/{d},1),3))"   # smoothstep over the scene, for zooms and page drifts
+
+
+def edge_color(path, start):
+    """The clip's background color at its left edge, to pad around a zoom window that reaches past the frame."""
+    raw = subprocess.run(["ffmpeg", "-v", "error", "-ss", f"{start:.3f}", "-i", path, "-frames:v", "1", "-vf", "crop=8:8:4:ih/2,scale=1:1",
+                          "-f", "rawvideo", "-pix_fmt", "rgb24", "-"], capture_output=True).stdout
+    return "0x" + raw[:3].hex() if len(raw) >= 3 else "black"
+
+
+def prep_clip(vis, dur, out, panel=None):
+    """Make the clip exactly the scene's length, muted, at 30 fps, so seeks are exact. A short clip loops, or with
+    `hold` freezes on its last frame. `zoom` eases a window across the clip; `page` drifts a still capture down."""
     if os.path.isfile(out):
         return
-    loop = ["-ignore_loop", "0"] if vis["abs"].lower().endswith(".gif") else ["-stream_loop", "-1"]
-    run(["ffmpeg", "-v", "error", "-y", *loop, "-ss", f"{vis['start']:.3f}", "-i", vis["abs"], "-t", f"{dur:.3f}", "-an",
-         "-vf", f"fps={FPS},scale=trunc(iw/2)*2:trunc(ih/2)*2", "-c:v", "libx264", "-crf", "17", "-g", "15", "-pix_fmt", "yuv420p", out])
+    enc = ["-an", "-c:v", "libx264", "-crf", "17", "-g", "15", "-pix_fmt", "yuv420p", out]
+    pw, ph = panel or (W, H)
+    if vis.get("page"):
+        y0, y1 = vis["page"]
+        y = f"min(ih-oh,{y0}+({y1 - y0})*{EASE.format(d=dur)})"
+        run(["ffmpeg", "-v", "error", "-y", "-loop", "1", "-framerate", str(FPS), "-t", f"{dur:.3f}", "-i", vis["abs"],
+             "-vf", f"scale={pw}:-2,pad=iw:max(ih\\,{ph}):0:0:white,crop={pw}:{ph}:0:'{y}',fps={FPS}", "-frames:v", str(frames(dur)), *enc])
+        return
+    src = ["-ss", f"{vis['start']:.3f}", "-i", vis["abs"]]
+    if vis.get("end"):
+        src[2:2] = ["-to", f"{vis['end']:.3f}"]
+    if vis.get("hold"):   # play once, then freeze the last frame for the rest of the scene
+        chain = [f"fps={FPS}", f"tpad=stop_mode=clone:stop_duration={dur:.3f}"]
+    else:
+        loop = ["-ignore_loop", "0"] if vis["abs"].lower().endswith(".gif") else ["-stream_loop", "-1"]
+        src = loop + src
+        chain = [f"fps={FPS}"]
+    if vis.get("zoom"):   # pad the clip to the panel's shape, then ease a window from one region to another
+        cw, ch, _ = probe(vis["abs"])
+        a = pw / ph
+        padw, padh = (round(ch * a / 2) * 2, ch) if cw / ch < a else (cw, round(cw / a / 2) * 2)
+        ox, oy = (padw - cw) // 2, (padh - ch) // 2
+        (x0, y0, w0), (x1, y1, w1) = vis["zoom"]
+        e = EASE.replace("t/{d}", f"on/{max(frames(dur) - 1, 1)}")
+        ww = f"(({w0})+(({w1})-({w0}))*{e})*{cw}"
+        cx, cy = f"(({x0})+(({x1})-({x0}))*{e})*{cw}+{ox}", f"(({y0})+(({y1})-({y0}))*{e})*{ch}+{oy}"
+        chain += [f"pad={padw}:{padh}:{ox}:{oy}:color={edge_color(vis['abs'], vis['start'])}",
+                  f"zoompan=z='{padw}/({ww})':x='max(0,min(iw-iw/zoom,{cx}-iw/zoom/2))':y='max(0,min(ih-ih/zoom,{cy}-ih/zoom/2))'"
+                  f":d=1:s={pw}x{ph}:fps={FPS}"]
+    else:
+        chain.append("scale=trunc(iw/2)*2:trunc(ih/2)*2")
+    run(["ffmpeg", "-v", "error", "-y", *src, "-t" if not vis.get("hold") else "-frames:v",
+         f"{dur:.3f}" if not vis.get("hold") else str(frames(dur)), "-vf", ",".join(chain), *enc])
 
 
 def number_parts(v):
@@ -273,11 +314,12 @@ def build(project, style_arg=None):
         def visual(out_h, top):
             v = sc["visual"]
             if v["type"] == "clip":
-                key = f"{os.path.realpath(v['abs'])}|{os.path.getmtime(v['abs'])}|{v['start']}|{d:.3f}"
-                name = f"{sid}-{hashlib.md5(key.encode()).hexdigest()[:8]}.mp4"   # a changed clip, start, or length gets a fresh file
-                prep_clip(v, d, os.path.join(A, "clips", name))
+                opts = json.dumps([v.get(k) for k in ("start", "end", "zoom", "hold", "page")]) + f"|{W}x{out_h}"
+                key = f"{os.path.realpath(v['abs'])}|{os.path.getmtime(v['abs'])}|{opts}|{d:.3f}"
+                name = f"{sid}-{hashlib.md5(key.encode()).hexdigest()[:8]}.mp4"   # a changed clip, option, or length gets a fresh file
+                prep_clip(v, d, os.path.join(A, "clips", name), (W, out_h))
                 cw, ch, _ = probe(os.path.join(A, "clips", name))
-                fit = v.get("fit") or ("fill" if abs(cw / ch - W / out_h) / (W / out_h) < .45 else "fit")
+                fit = v.get("fit") or ("fill" if abs(cw / ch - W / out_h) / (W / out_h) < .2 else "fit")   # crop only near-matching shapes, so text at the sides survives
                 vid = lambda vid_id, cls, extra: (f'<video id="{vid_id}" class="clip {cls}" src="assets/clips/{name}" data-start="{t0:.3f}" data-duration="{d:.3f}" '
                                                   f'data-media-start="0" data-track-index="{40 + i * 2 + extra}" muted playsinline></video>')
                 if fit == "fit":   # letterbox over a blurred still of the same clip

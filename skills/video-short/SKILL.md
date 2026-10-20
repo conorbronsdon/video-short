@@ -5,7 +5,7 @@ description: "Turn a raw talking-head recording into a finished 1080x1920 Short,
 
 # Video Short
 
-Input: a raw talking-head recording. Output: `renders/<project>-vN.mp4` at 1080x1920 and 30 fps, plus the `edit.md` that produced it.
+Input: a raw talking-head recording. Output: `renders/<project>-vN.mp4` at 1080x1920 and 30 fps, a 720p copy in `renders/share/` small enough to send, and the `edit.md` that produced it.
 
 You make every editorial call; the scripts measure, render, and serve the review page. Commands, the `edit.md` format, graphics, and style keys live in [reference.md](reference.md).
 
@@ -33,11 +33,11 @@ Research what the Short needs, then write `## Scenes` in `edit.md`, one row per 
 - **Layouts:** `a-roll` (full-screen speaker), `punch` (tighter speaker for emphasis), `split` (visual on top, speaker below), `b-roll` (visual full screen).
 - **Keep the speaker present** for at least half the Short, and end each full-screen B-roll shot within about 3.5 seconds, because viewers connect with a face.
 - **Visuals show what the words don't:** the product doing the thing, the result, the proof. Captions already carry the words. Show the real product or UI, captured from the actual screen, and mock it up only when the real one isn't available. Never invent numbers or results.
-- **Everything off-camera moves.** Real footage first. Otherwise a list card that adds a row per spoken item, a `number:` that counts up to a stat the speaker says, or a `graphic:` you write for anything else, such as a flow or a before and after. Never use a still image as B-roll; an image is only the first frame of a Veo clip. Skip dim UI panels and waveforms, which lose viewers. When a graphic leads into a clip, end it on the clip's first frame so the cut disappears.
+- **Everything off-camera moves.** Real footage first. Otherwise a list card that adds a row per spoken item, a `number:` that counts up to a stat the speaker says, or a `graphic:` you write for anything else, such as a flow or a before and after. Never use a still image as B-roll; an image is only the first frame of a Veo clip, or a `page:` capture that scrolls. Skip dim UI panels and waveforms, which lose viewers. When a graphic leads into a clip, end it on the clip's first frame so the cut disappears.
 - **Readable and clean.** A graphic fills its panel, with text a viewer can read on a phone at a glance. Never put a card or overlay over the speaker's face. Never show another captioned video full screen under this Short's captions.
 - **Pace:** Change the shot every few seconds, since a phone viewer swipes away from a static frame. When the speaker names several things in a row, give each its own clip or card row on its spoken word. Use each clip once.
 
-Find B-roll in this order: the user's own footage, then official demos and the media in posts or launch pages about the topic. Trim each clip to its useful seconds and crop until it reads on a phone. Keep every line of on-screen text whole: capture web pages at phone width and drift down one complete section instead of panning across it, and crop product UI at component edges. Use footage the user has the right to use. Show a brand's logo only from its official file, never redrawn or generated; without one, write the name.
+Find B-roll in this order: the user's own footage, then official demos and the media in posts or launch pages about the topic. Use each clip's useful seconds with `@start-end`, and `hold` its last frame instead of letting a short clip loop. Keep every line of on-screen text whole: capture web pages with `capture.py`, which reflows them to phone width, and show them as `page:` drifting down one complete section. When product UI is too small to read, `zoom` into one complete card or field rather than cropping text at the edges. Use footage the user has the right to use. Show a brand's logo only from its official file, never redrawn or generated; without one, write the name.
 
 When the user has a Gemini key and a shot has no good footage, propose generating it: a Nano Banana image, a Veo clip, or a Lyria music bed. Generate only what the user approves, because each call costs money.
 

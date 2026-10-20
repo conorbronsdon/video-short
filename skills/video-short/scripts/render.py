@@ -1,7 +1,7 @@
 """Render edit.md into the finished Short: build the HyperFrames project, render it, and add the audio mix.
 usage: render.py PROJECT [--style STYLE_JSON] [--draft]
 --draft renders fast at lower quality for review.
-Output: renders/<project>-vN.mp4, never overwriting an earlier version."""
+Output: renders/<project>-vN.mp4, never overwriting an earlier version, plus a 720p copy in renders/share/."""
 import argparse, os, re, shutil, subprocess, tempfile
 
 from build import build
@@ -39,7 +39,12 @@ def main():
         out = next_version(paths["renders"], os.path.basename(paths["root"]))
         run(["ffmpeg", "-v", "error", "-y", "-i", silent, "-i", mix, "-map", "0:v", "-map", "1:a", "-c:v", "copy",
              "-c:a", "aac", "-b:a", "256k", "-t", f"{dur:.3f}", "-movflags", "+faststart", out])
-    print(f"Rendered {out} ({dur:.2f}s). Run qa.py next.")
+    # A small copy for phones, chat, and email, which the full-quality master is too big for.
+    share = os.path.join(paths["renders"], "share", os.path.basename(out))
+    os.makedirs(os.path.dirname(share), exist_ok=True)
+    run(["ffmpeg", "-v", "error", "-y", "-i", out, "-vf", "scale=720:1280", "-c:v", "libx264", "-crf", "26", "-preset", "medium",
+         "-pix_fmt", "yuv420p", "-c:a", "aac", "-b:a", "128k", "-movflags", "+faststart", share])
+    print(f"Rendered {out} ({dur:.2f}s), with a 720p copy to share at {share}. Run qa.py next.")
 
 
 if __name__ == "__main__":

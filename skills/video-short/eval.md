@@ -15,7 +15,7 @@ Answer each check yes or no before sharing the final render. Fix any no first.
 6. Does the Short answer the question its hook raises?
 7. Is the speaker on screen for at least half the Short, with no full-screen B-roll shot longer than about 3.5 seconds?
 8. Does each visual show something the words don't already say?
-9. Does every off-camera shot move, with no still image or static slide?
+9. Does every off-camera shot move, with no static image or slide?
 10. Is every line of on-screen text in B-roll whole, with nothing cut off at a frame edge?
 11. Is every number and result on screen one the speaker said or the source shows?
 12. Is every logo on screen from the brand's official file?
