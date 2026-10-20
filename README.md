@@ -6,7 +6,7 @@ Turn a raw recording into a polished video short, complete with B-roll, motion g
 
 Watch the explainer above, or see a short below that video short edited from one raw take: cuts, captions, B-roll, motion graphics, and music.
 
-<!-- Example short: drag assets/example-short.mp4 into this README on GitHub, then replace this comment with the user-attachments link it creates. -->
+https://github.com/user-attachments/assets/57e35238-80cf-4a78-8560-ef6250357f2c
 
 ## Problem
 
