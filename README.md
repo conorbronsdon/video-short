@@ -2,11 +2,7 @@
 
 Turn a raw recording into a polished video short, complete with B-roll, motion graphics, captions, music, and more, with your favorite AI agent.
 
-[![Watch the explainer: Turn Any Raw Recording Into a Polished Video Short with AI](https://img.youtube.com/vi/NWll-9p84b4/maxresdefault.jpg)](https://youtu.be/NWll-9p84b4)
-
-Watch the explainer above, or see a short below that video short edited from one raw take: cuts, captions, B-roll, motion graphics, and music.
-
-https://github.com/user-attachments/assets/57e35238-80cf-4a78-8560-ef6250357f2c
+[Watch my video tutorial](https://youtu.be/Qilm0PddOCI) to see how I use this skill.
 
 ## Problem
 
@@ -29,6 +25,10 @@ Here's what the skill can do to create your video:
 - **Motion graphics** written in HTML to bring the short to life, like list cards that build as you talk and numbers that count up.
 - **B-roll footage** that's relevant to what you're saying, found on the web.
 - **AI video and music** generated with Gemini Veo and Lyria. This step needs a Gemini API key with billing enabled. You can also add your own video and music.
+
+<p align="center">
+  <video src="https://github.com/user-attachments/assets/57e35238-80cf-4a78-8560-ef6250357f2c" width="300" controls></video>
+</p>
 
 ## How to install video short
 
