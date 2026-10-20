@@ -2,7 +2,11 @@
 
 Turn a raw recording into a polished video short, complete with B-roll, motion graphics, captions, music, and more, with your favorite AI agent.
 
-<!-- Demo video: drag assets/before-after.mp4 into this README on GitHub and put the user-attachments link here. -->
+[![Watch the explainer: Turn Any Raw Recording Into a Polished Video Short with AI](https://img.youtube.com/vi/NWll-9p84b4/maxresdefault.jpg)](https://youtu.be/NWll-9p84b4)
+
+Watch the explainer above, or see a short below that video short edited from one raw take: cuts, captions, B-roll, motion graphics, and music.
+
+<!-- Example short: drag assets/example-short.mp4 into this README on GitHub, then replace this comment with the user-attachments link it creates. -->
 
 ## Problem
 
@@ -60,10 +64,10 @@ The skill will then do 4 things:
 
 1. **Cut.** The agent transcribes the recording, reads every line, and cuts retakes, false starts, and dead air.
 2. **Plan.** It researches the topic, finds B-roll from your footage and the web, and shows you a table of the plan in chat: every scene, what's on screen, and what it wants to generate. Reply "go" or ask for changes.
-3. **Review.** It renders a draft and opens a review page. You can watch the draft short and pause on any frame to leave feedback. Click Send when you're done.
-4. **Iterate.** The agent applies your notes and renders the next draft, and the page reloads. Repeat until you click Approve and render final.
+3. **Review.** It renders a draft and opens a review page. You can watch the draft short and pause on any frame to leave feedback. Click Send notes when you're done.
+4. **Iterate.** The agent applies your notes and renders the next draft, and the page reloads. Repeat until you click Looks good.
 
-Each render saves a new version, so you can compare `v1` and `v2`.
+Each render saves a new version, so you can compare `v1` and `v2`, plus a small 720p copy in `renders/share/` to send from your phone or email.
 
 ## Make it yours
 
