@@ -49,6 +49,8 @@ video { height: calc(100vh - 140px); aspect-ratio: 9 / 16; background: #000; bor
 .icon-btn { width: 26px; height: 26px; display: flex; align-items: center; justify-content: center; border: 1px solid var(--hair); border-radius: 7px; background: var(--soft); font-size: 12.5px; line-height: 1; cursor: pointer; }
 .icon-btn:hover { border-color: var(--strong-border); color: var(--strong-txt); }
 .push { margin-left: auto; }
+.speed { min-width: 46px; padding: 3px 9px; border: 1px solid var(--strong-border); border-radius: 999px; background: var(--card); font: 600 11.5px ui-monospace, monospace; color: var(--strong-txt); cursor: pointer; }
+.speed:hover { border-color: var(--focus); }
 .controls { position: relative; }
 .keys { position: absolute; right: 0; bottom: 74px; z-index: 10; width: 250px; padding: 10px 12px; border: 1px solid var(--strong-border); border-radius: 8px; background: var(--card); box-shadow: 0 8px 24px -10px rgba(0, 0, 0, 0.45); color: var(--mute); font-size: 12px; }
 .keys div { display: flex; justify-content: space-between; gap: 12px; padding: 3px 0; }
@@ -70,7 +72,6 @@ textarea:focus { border-color: var(--focus); background: var(--card); }
 .del { margin-left: auto; border: 0; background: none; color: var(--faint); font-size: 11px; cursor: pointer; }
 .del:hover { color: var(--danger); }
 .rail-foot { flex: none; padding: 12px; border-top: 1px solid var(--hair); }
-#overall { min-height: 58px; margin-bottom: 9px; font-size: 12.5px; resize: vertical; }
 .send { width: 100%; padding: 10px 12px; border: 1px solid var(--btn-bg); border-radius: 6px; background: var(--btn-bg); color: var(--btn-fg); font-size: 12.5px; font-weight: 500; cursor: pointer; }
 #status { margin-top: 8px; min-height: 16px; color: var(--mute); font-size: 11.5px; text-align: center; }
 @media (max-aspect-ratio: 4/5) {   /* phone or portrait window: video and timeline on top, comments below */
@@ -83,14 +84,13 @@ textarea:focus { border-color: var(--focus); background: var(--card); }
 
 JS = r"""
 const $ = (id) => document.getElementById(id);
-const v = $("v"), bar = $("bar"), note = $("note"), overall = $("overall");
+const v = $("v"), bar = $("bar"), note = $("note");
 const fmt = (t) => `${Math.floor(t / 60)}:${(t % 60).toFixed(2).padStart(5, "0")}`;
 const sceneAt = (t) => SCENES.find((s) => t >= s.start && t < s.end) || SCENES[SCENES.length - 1];
 const store = (k, val) => { try { if (val === undefined) return localStorage.getItem(k); localStorage.setItem(k, val); } catch {} };
 const KEY = "review:" + location.pathname;
-let state; try { state = JSON.parse(store(KEY)) || { comments: [], overall: "" }; } catch { state = { comments: [], overall: "" }; }
+let state; try { state = JSON.parse(store(KEY)) || { comments: [] }; } catch { state = { comments: [] }; }
 const save = () => store(KEY, JSON.stringify(state));
-overall.value = state.overall || "";
 
 // Theme: dark by default, remembered per browser.
 const setTheme = (t) => { document.documentElement.dataset.theme = t; $("theme").textContent = t === "dark" ? "☀" : "☾"; store("review:theme", t); };
@@ -123,6 +123,12 @@ function tick() {
 ["timeupdate", "seeked", "play", "pause"].forEach((e) => v.addEventListener(e, tick));
 (function loop() { if (!v.paused) tick(); requestAnimationFrame(loop); })();
 const toggle = () => (v.paused ? v.play() : v.pause());
+// Playback speed: click to cycle, or < and > to step; remembered per browser.
+const SPEEDS = [0.5, 0.75, 1, 1.25, 1.5, 2];
+const setSpeed = (r) => { v.playbackRate = r; $("speed").textContent = r + "×"; store("review:speed", String(r)); };
+setSpeed(Number(store("review:speed")) || 1);
+const stepSpeed = (d) => { const i = SPEEDS.indexOf(v.playbackRate); setSpeed(SPEEDS[Math.max(0, Math.min(SPEEDS.length - 1, (i < 0 ? 2 : i) + d))]); };
+$("speed").onclick = () => setSpeed(SPEEDS[(SPEEDS.indexOf(v.playbackRate) + 1) % SPEEDS.length]);
 v.onclick = toggle; $("play").onclick = toggle;
 let drag = false;
 const scrub = (e) => { const r = bar.getBoundingClientRect(); seek(((e.clientX - r.left) / r.width) * DUR); };
@@ -147,7 +153,7 @@ function render() {
     el.querySelector(".del").onclick = (e) => { e.stopPropagation(); state.comments.splice(i, 1); save(); render(); };
     list.appendChild(el);
   });
-  $("send").textContent = state.comments.length || overall.value.trim() ? "Send notes" : "Approve and render final";
+  $("send").textContent = state.comments.length ? "Send notes" : "Approve and render final";
 }
 function add() {
   const text = note.value.trim();
@@ -160,7 +166,6 @@ note.onfocus = () => v.pause();
 note.oninput = () => ($("add").disabled = !note.value.trim());
 note.onkeydown = (e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); add(); } if (e.key === "Escape") note.blur(); };
 $("add").onclick = add;
-overall.oninput = () => { state.overall = overall.value; save(); render(); };
 
 addEventListener("keydown", (e) => {
   if (e.target.tagName === "TEXTAREA") return;
@@ -169,15 +174,17 @@ addEventListener("keydown", (e) => {
   else if (e.key === "ArrowLeft") { e.preventDefault(); v.pause(); seek(v.currentTime - step); }
   else if (e.key === "ArrowRight") { e.preventDefault(); v.pause(); seek(v.currentTime + step); }
   else if (e.key === "c") { e.preventDefault(); note.focus(); }
+  else if (e.key === "<" || e.key === ",") { e.preventDefault(); stepSpeed(-1); }
+  else if (e.key === ">" || e.key === ".") { e.preventDefault(); stepSpeed(1); }
 });
 
 $("send").onclick = async () => {
   $("send").disabled = true; $("status").textContent = "Sending…";
   try {
     const r = await fetch("/api/feedback", { method: "POST", headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ video: v.getAttribute("src").split("?")[0], comments: state.comments, overall: overall.value.trim() }) });
+      body: JSON.stringify({ video: v.getAttribute("src").split("?")[0], comments: state.comments }) });
     if (!r.ok) throw new Error(r.status);
-    state = { comments: [], overall: "" }; overall.value = ""; save(); render();
+    state = { comments: [] }; save(); render();
     $("status").textContent = "Sent. This page reloads when the next draft is ready.";
   } catch { $("status").textContent = "Couldn't reach your agent. Ask it to run review.py again; your notes are saved here."; render(); }
 };
@@ -328,11 +335,12 @@ PAGE = """<!DOCTYPE html>
   <main class="stage">
     <video id="v" src="{src}" playsinline preload="auto"></video>
     <div class="controls">
-      <div class="row"><button id="play" class="play" type="button" aria-label="Play or pause">▶</button><span id="tc" class="tc"></span><span id="scene" class="chip"></span><button id="keysbtn" class="icon-btn push" type="button" aria-label="Keyboard shortcuts">?</button></div>
+      <div class="row"><button id="play" class="play" type="button" aria-label="Play or pause">▶</button><span id="tc" class="tc"></span><span id="scene" class="chip"></span><button id="speed" class="speed" type="button" aria-label="Playback speed">1×</button><button id="keysbtn" class="icon-btn push" type="button" aria-label="Keyboard shortcuts">?</button></div>
       <div id="keys" class="keys" hidden>
         <div><span>Play or pause</span><kbd>Space</kbd></div>
         <div><span>One frame</span><span><kbd>←</kbd> <kbd>→</kbd></span></div>
         <div><span>One second</span><span><kbd>Shift</kbd> + arrows</span></div>
+        <div><span>Playback speed</span><span><kbd>&lt;</kbd> <kbd>&gt;</kbd></span></div>
         <div><span>Comment on this frame</span><kbd>C</kbd></div>
         <div><span>Add comment</span><kbd>Enter</kbd></div>
         <div><span>Back to the video</span><kbd>Esc</kbd></div>
@@ -352,7 +360,6 @@ PAGE = """<!DOCTYPE html>
       <div id="list" class="cards"></div>
     </div>
     <div class="rail-foot">
-      <textarea id="overall" placeholder="Overall note (optional)"></textarea>
       <button id="send" class="send" type="button">Send notes</button>
       <div id="status"></div>
     </div>
