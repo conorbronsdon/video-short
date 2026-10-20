@@ -2,7 +2,9 @@
 
 Turn a raw recording into a polished video short, complete with B-roll, motion graphics, captions, music, and more, with your favorite AI agent.
 
-[Watch my video tutorial](https://youtu.be/Qilm0PddOCI) to see how I use this skill.
+[Watch my video tutorial](https://youtu.be/NWll-9p84b4) to see how I use this skill.
+
+![Four steps: install the skill, upload your raw recording, give feedback, and get a polished short](assets/four-steps.jpg)
 
 ## Problem
 
@@ -25,6 +27,14 @@ Here's what the skill can do to create your video:
 - **Motion graphics** written in HTML to bring the short to life, like list cards that build as you talk and numbers that count up.
 - **B-roll footage** that's relevant to what you're saying, found on the web.
 - **AI video and music** generated with Gemini Veo and Lyria. This step needs a Gemini API key with billing enabled. You can also add your own video and music.
+- **A review page** that plays your draft. Pause on any frame, leave a comment pinned to that moment, and send all your notes at once. The agent applies them and the page reloads with the next draft.
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="assets/review-dark.jpg">
+  <img alt="The review page: the draft short plays on a scene timeline, with comments pinned to frames on the right" src="assets/review-light.jpg">
+</picture>
+
+Here's a short that video short made from one raw take:
 
 https://github.com/user-attachments/assets/57e35238-80cf-4a78-8560-ef6250357f2c
 
