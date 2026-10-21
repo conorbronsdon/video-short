@@ -8,7 +8,7 @@ https://github.com/user-attachments/assets/51b8decf-d719-4f4b-9824-5686b3a97ac7
 
 ## Problem
 
-Shorts average 200 billion daily views on YouTube alone and every social and video platform wants more of them. But it's still too hard to create great shorts manually. Meanwhile, AI has become incredible at video editing. This skill provides the right instructions for AI to work.
+Shorts average 200 billion daily views on YouTube alone, but making a great one by hand still takes hours. And when you ask AI to help, giving feedback in chat is painful because you can't point at the exact frame you want to fix.
 
 ## What video short can do
 
