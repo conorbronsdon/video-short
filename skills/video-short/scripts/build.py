@@ -27,7 +27,7 @@ def speaker_box(src_w, src_h, fx, fy, out_w, out_h, zoom, face_at):
     """Position of the camera video inside an out_w x out_h panel: face centered, face_at of the way down."""
     s = max(out_w / src_w, out_h / src_h) * zoom
     sw, sh = src_w * s, src_h * s
-    x = min(max(fx * sw - out_w / 2, 0), sw - out_w)
+    x = (sw - out_w) / 2 if sw < out_w else min(max(fx * sw - out_w / 2, 0), sw - out_w)   # narrower than the panel: center it
     y = min(max(fy * sh - face_at * out_h, 0), sh - out_h)
     return -x, -y, sw, sh, fx * sw - x, fy * sh - y   # left, top, width, height, face point in the panel
 
@@ -286,6 +286,7 @@ def build(project, style_arg=None):
     if not os.path.isfile(cam) or os.path.getmtime(cam) < os.path.getmtime(paths["clean"]):
         run(["ffmpeg", "-v", "error", "-y", "-i", paths["clean"], "-an", "-c:v", "libx264", "-crf", "16", "-g", "15", "-pix_fmt", "yuv420p", cam])
 
+    run(["ffmpeg", "-v", "error", "-y", "-i", cam, "-frames:v", "1", "-q:v", "4", os.path.join(A, "camera_bg.jpg")])
     cs, cd = style["caption"], style["card"]
     fonts = {}
     for key, path in (("cap", cs["font"]), ("title", cd["title_font"]), ("body", cd["body_font"]), ("num", cd["number_font"])):
@@ -325,7 +326,8 @@ def build(project, style_arg=None):
         def speaker(out_w, out_h, top, zoom, face_at):
             l, t, w, h, ox, oy = speaker_box(src_w, src_h, fx, fy, out_w, out_h, zoom, face_at)
             js.append(f'tl.fromTo("#{sid}push", {{ scale: 1 }}, {{ scale: {PUSH}, duration: {d:.3f}, ease: "none", immediateRender: false }}, {t0:.3f});')
-            return (f'<div class="panel" style="top:{top}px;height:{out_h}px"><div id="{sid}push" class="push" style="transform-origin:{ox:.0f}px {oy:.0f}px">'
+            fill = '<img class="campad" src="assets/camera_bg.jpg" alt="">' if w < out_w else ""   # the room, blurred, behind a zoomed-out speaker
+            return (f'<div class="panel" style="top:{top}px;height:{out_h}px">{fill}<div id="{sid}push" class="push" style="transform-origin:{ox:.0f}px {oy:.0f}px">'
                     f'<video id="{sid}cam" class="clip" src="assets/camera.mp4" data-start="{t0:.3f}" data-duration="{d:.3f}" data-media-start="{t0:.3f}" '
                     f'data-track-index="{10 + i}" muted playsinline style="left:{l:.1f}px;top:{t:.1f}px;width:{w:.1f}px;height:{h:.1f}px"></video></div></div>')
 
@@ -405,7 +407,8 @@ def build(project, style_arg=None):
         elif lay == "split":
             parts.append(visual(SPLIT_TOP, 0))
             # A landscape camera needs a push in to fill the panel; a vertical one already frames head and shoulders.
-            parts.append(speaker(W, H - SPLIT_TOP, SPLIT_TOP, 1.2 if src_w > src_h else 1.0, .42))
+            # A landscape camera pushes in to fill the panel; a vertical one zooms out so the whole head and neck fit.
+            parts.append(speaker(W, H - SPLIT_TOP, SPLIT_TOP, 1.2, .42) if src_w > src_h else speaker(W, H - SPLIT_TOP, SPLIT_TOP, .72, .42))
         else:
             parts.append(visual(H, 0))
         prev_card = sc["visual"] if sc["visual"] and sc["visual"]["type"] == "card" else None
@@ -482,6 +485,7 @@ html, body {{ margin: 0; width: 100%; height: 100%; overflow: hidden; background
 .panel {{ position: absolute; left: 0; width: {W}px; overflow: hidden; background: #000; }}
 .push {{ position: absolute; inset: 0; }}
 .push video {{ position: absolute; }}
+.campad {{ position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; filter: blur(30px) brightness(.85); transform: scale(1.15); }}
 .vis video.cover, .vis video.contain, .vis .blurbg {{ position: absolute;  left: 0; top: 0; width: 100%; height: 100%; }}
 .vis video.cover {{ object-fit: cover; }}
 .vis video.contain {{ object-fit: contain; }}
