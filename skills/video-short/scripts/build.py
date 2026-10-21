@@ -169,11 +169,10 @@ def caption_track(chunks, scenes, total_frames):
     out = []
     for c in chunks:
         a, b = frames(c["start"]), min(total_frames, frames(c["end"]))
-        for sc in scenes:
-            sa, sb = frames(sc["start"]), frames(sc["end"])
-            lo, hi = max(a, sa), min(b, sb)
-            if hi > lo:
-                out.append((lo, hi, c["text"], sc["layout"]))
+        pieces = [(max(a, frames(sc["start"])), min(b, frames(sc["end"])), c["text"], sc["layout"]) for sc in scenes]
+        pieces = [p for p in pieces if p[1] > p[0]]
+        # A sliver on the far side of a cut flickers in the old position, so a split caption drops pieces under 4 frames.
+        out += [p for p in pieces if len(pieces) == 1 or p[1] - p[0] >= 4]
     return out
 
 
@@ -317,7 +316,8 @@ def build(project, style_arg=None):
     hosts, js, sfx = [], [], []
     prev_card = None
     for i, sc in enumerate(scenes):
-        t0, t1 = frames(sc["start"]) / FPS, frames(sc["end"]) / FPS
+        # Each scene starts half a frame before its first frame, so rounded times never leave a frame uncovered.
+        t0, t1 = max(0.0, frames(sc["start"]) - .5) / FPS, (frames(sc["end"]) - .5) / FPS
         d = t1 - t0
         sid = sc["id"]
         lay = sc["layout"]
@@ -427,14 +427,14 @@ def build(project, style_arg=None):
                 marks.update(range(x, y))
         inner, j = [], 0
         while j < len(ws):   # one box per emphasized phrase, not per word
-            k = j
-            while k < len(ws) and (k in marks) == (j in marks):
-                k += 1
-            seg = esc(" ".join(ws[j:k]))
+            m = j
+            while m < len(ws) and (m in marks) == (j in marks):
+                m += 1
+            seg = esc(" ".join(ws[j:m]))
             inner.append(f'<span class="em">{seg}</span>' if j in marks else seg)
-            j = k
+            j = m
         inner = " ".join(inner)
-        caps.append(f'<div id="cap{k}" class="clip cap" data-start="{fa / FPS:.4f}" data-duration="{(fb - fa) / FPS:.4f}" data-track-index="100" '
+        caps.append(f'<div id="cap{k}" class="clip cap" data-start="{max(0.0, fa - .5) / FPS:.4f}" data-duration="{(fb - fa) / FPS:.4f}" data-track-index="100" '
                     f'style="top:{caption_y(layout, style)}px"><span class="band">{inner}</span></div>')
 
     # Audio: voice, optional music, optional subtle sound effects, leveled to -14 LUFS.
@@ -461,7 +461,8 @@ def build(project, style_arg=None):
         subprocess.run(["ffmpeg", "-v", "error", "-y", "-f", "f32le", "-ar", str(SR), "-ac", "2", "-i", "-", mix],
                        input=m.astype(np.float32).tobytes(), check=True)
 
-    page = PAGE.format(dur=f"{dur:.3f}", W=W, H=H, faces=face_css, bg=css_color(style.get("background", "#0B0B0D")),
+    # The root duration sits just under the last frame, so HyperFrames never renders an extra one.
+    page = PAGE.format(dur=f"{(total - .25) / FPS:.4f}", W=W, H=H, faces=face_css, bg=css_color(style.get("background", "#0B0B0D")),
                        cap_size=cs["size"], cap_color=css_color(cs["color"]), cap_box=css_color(cs["box"]),
                        cap_radius=cs.get("radius", 8), pad_x=cs.get("pad", [36, 20])[0], pad_y=cs.get("pad", [36, 20])[1],
                        cap_border=css_color(cs.get("border", "#00000000")), em=css_color(cs.get("emphasis") or cd["accent"]),

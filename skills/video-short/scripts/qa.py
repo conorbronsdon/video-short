@@ -24,7 +24,7 @@ def streams(video):
 
 
 def black_frames(video):
-    err = subprocess.run(["ffmpeg", "-i", video, "-vf", "blackdetect=d=0.1:pix_th=0.08", "-an", "-f", "null", "-"],
+    err = subprocess.run(["ffmpeg", "-i", video, "-vf", "blackdetect=d=0.03:pix_th=0.08", "-an", "-f", "null", "-"],
                          capture_output=True, text=True).stderr
     return re.findall(r"black_start:([\d.]+) black_end:([\d.]+)", err)
 

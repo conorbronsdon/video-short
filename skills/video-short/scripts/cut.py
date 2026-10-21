@@ -26,12 +26,23 @@ def snap(cuts, db, duration, hop=0.01):
     return out
 
 
-def look(src, out_dir, duration, grade):
+def look(src, out_dir, duration, grade, cuts=()):
+    """Gridded stills at a quarter, half, and three quarters of the kept footage (or the whole file before Cuts exist)."""
     os.makedirs(out_dir, exist_ok=True)
     grid = "drawgrid=w=iw/10:h=ih/10:t=2:c=yellow@0.7"
-    for t in (duration * k / 4 for k in (1, 2, 3)):
+    spans = sorted(cuts) or [(0, duration)]
+    kept = sum(b - a for a, b in spans)
+    times = []
+    for k in (1, 2, 3):
+        left = kept * k / 4
+        for a, b in spans:
+            if left <= b - a:
+                times.append(a + left)
+                break
+            left -= b - a
+    for t in times:
         out = os.path.join(out_dir, f"{'grade' if grade else 'frame'}_{t:06.2f}.jpg")
-        vf = f"split[a][b];[b]{grade}[g];[a][g]hstack" if grade else grid
+        vf = f"split[a][b];[b]{grade}[g];[a][g]hstack,{grid}" if grade else grid
         run(["ffmpeg", "-v", "error", "-y", "-ss", f"{t:.3f}", "-i", src, "-frames:v", "1", "-filter_complex", f"{vf},scale='min(1600,iw)':-2", "-q:v", "3", out])
         print(out)
 
@@ -41,6 +52,7 @@ def main():
     ap.add_argument("project")
     ap.add_argument("--look", action="store_true")
     ap.add_argument("--grade")
+    ap.add_argument("--style")
     a = ap.parse_args()
     paths = project_paths(a.project)
     edit = parse_edit(paths["edit"])
@@ -49,7 +61,7 @@ def main():
         die("edit.md needs a 'Source: raw.mp4' line")
     src = src if os.path.isabs(src) else os.path.join(paths["root"], src)
     if a.look:
-        return look(src, os.path.join(paths["work"], "look"), probe(src)[2], a.grade)
+        return look(src, os.path.join(paths["work"], "look"), probe(src)[2], a.grade, edit["cuts"])
     if not edit["cuts"]:
         die("edit.md has no ranges under '## Cuts'")
     _, _, duration = probe(src)
@@ -67,7 +79,7 @@ def main():
             parts.append(f"[0:a]atrim=start={a:.6f}:end={b:.6f},asetpts=PTS-STARTPTS,"
                          f"afade=t=in:d={fade},afade=t=out:st={max(0, b - a - fade):.6f}:d={fade}[a{i}]")
             joins += f"[v{i}][a{i}]"
-        grade = setting(edit, "grade") or load_style(paths["root"]).get("grade", "")
+        grade = setting(edit, "grade") or load_style(paths["root"], a.style).get("grade", "")
         grade_chain = f",{grade}" if grade and grade.lower() != "none" else ""
         parts.append(f"{joins}concat=n={len(cuts)}:v=1:a=1[vc][ac]")
         parts.append(f"[vc]setsar=1{grade_chain},format=yuv420p[vout]")

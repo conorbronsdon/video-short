@@ -15,13 +15,13 @@ On first use, run `setup.sh`. If it lists missing tools, tell the user Video Sho
 
 Make one folder per Short, named with a short slug, where the user asks, else `projects_dir` from the style file, else the current folder. Leave the recording untouched and point `Source:` at it.
 
-Run `transcribe.py` and read every line of `work/transcript_raw.md`. The transcript keeps ums, stutters, and restarts, so retakes show in the text. Write `## Cuts` in `edit.md`:
+Run `transcribe.py` and read every line of `work/transcript_raw.md`. The transcript keeps ums, stutters, and restarts, so retakes show in the text. When the recording is longer than the Short, such as a full tutorial, first pick its strongest 30 to 60 seconds: cuts can be one or a few ranges from anywhere in the file. Write `## Cuts` in `edit.md`:
 
 - Keep the last complete take of any repeated line. Drop false starts, stray fillers, and dead air.
 - Cut between words, never inside one; use the word times in the `.json` for a restart mid-sentence.
 - Start about 0.1s before the first word and end about 0.1s after the last. Leave a natural breath after commas and list items. Never speed up the voice.
 
-Run `cut.py --look` and read the gridded stills for `Framing: x, y`, the face center. Add `--grade` to compare a subtle ffmpeg grade side by side, or use `Grade: none` when the footage already looks good.
+Run `cut.py --look` and read the gridded stills, taken from the kept footage, for `Framing: x, y`, the face center. A landscape recording crops to vertical around that point. Add `--grade` to compare a subtle ffmpeg grade side by side, or use `Grade: none` when the footage already looks good.
 
 Run `cut.py`, then read `work/transcript_clean.md`. Fix any clipped word or surviving retake and run it again. All scene times use this cut timeline.
 
@@ -37,7 +37,7 @@ Research what the Short needs, then write `## Scenes` in `edit.md`, one row per 
 - **Readable and clean.** A graphic fills its panel, with text a viewer can read on a phone at a glance. Never put a card or overlay over the speaker's face. Never show another captioned video full screen under this Short's captions.
 - **Pace:** Change the shot every few seconds, since a phone viewer swipes away from a static frame. Good starting points, which the script can override: the first cut within about a second, on the first strong word, and most shots around 1 to 2 seconds, with a longer hold when a demo or a key line needs time to land. When the speaker names several things in a row, give each its own clip or card row on its spoken word. Use each clip once.
 
-Find B-roll in this order: the user's own footage, then official demos and the media in posts or launch pages about the topic. Use each clip's useful seconds with `@start-end`, and `hold` its last frame instead of letting a short clip loop. Keep every line of on-screen text whole: capture web pages with `capture.py`, which reflows them to phone width, and show them as `page:` drifting down one complete section. When product UI is too small to read, `zoom` into one complete card or field rather than cropping text at the edges. Use footage the user has the right to use. Show a brand's logo only from its official file, never redrawn or generated; without one, write the name.
+Find B-roll in this order: the user's own footage, including the screen-share parts of a longer recording, then official demos and the media in posts or launch pages about the topic. Use each clip's useful seconds with `@start-end`, and `hold` its last frame instead of letting a short clip loop. Keep every line of on-screen text whole: capture web pages with `capture.py`, which reflows them to phone width, and show them as `page:` drifting down one complete section. When product UI is too small to read, `zoom` into one complete card or field rather than cropping text at the edges. Use footage the user has the right to use. Show a brand's logo only from its official file, never redrawn or generated; without one, write the name.
 
 When the user has a Gemini key and a shot has no good footage, propose generating it: a Nano Banana image, a Veo clip, or a Lyria music bed. Generate only what the user approves, because each call costs money.
 

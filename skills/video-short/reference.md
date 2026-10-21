@@ -16,7 +16,7 @@ $S/setup.sh
 
 # 1. Cut
 $S/py $S/transcribe.py "$P/raw.mp4" "$P/work/transcript_raw"   # -> .md to read, .json with word times
-$S/py $S/cut.py "$P" --look                                     # gridded stills for Framing -> work/look/
+$S/py $S/cut.py "$P" --look                                     # gridded stills of the kept footage for Framing -> work/look/
 $S/py $S/cut.py "$P" --look --grade "eq=contrast=1.06:saturation=1.1"
 $S/py $S/cut.py "$P"                                            # -> work/clean.mp4 and transcript_clean
 
@@ -37,7 +37,7 @@ $S/py $S/render.py "$P"
 $S/py $S/qa.py "$P"
 ```
 
-`render.py` builds the HyperFrames project in `hf/`, renders it, adds the audio mix, and saves the next version in `renders/`, plus a 720p copy under 10 MB or so in `renders/share/` for phones, chat, and email. A draft takes as long as a final; `--draft` only lowers encoding quality. `review.py` reviews the newest render unless you pass a video, saves notes to `work/feedback.md` with a still of each commented frame in `work/review-frames/`, and uses port 8791 or any free port. `render.py` accepts `--style FILE`; `qa.py` checks the newest render unless you pass a video.
+`render.py` builds the HyperFrames project in `hf/`, renders it, adds the audio mix, and saves the next version in `renders/`, plus a 720p copy under 10 MB or so in `renders/share/` for phones, chat, and email. A draft takes as long as a final; `--draft` only lowers encoding quality. `review.py` reviews the newest render unless you pass a video, saves notes to `work/feedback.md` with a still of each commented frame in `work/review-frames/`, and uses port 8791 or any free port. `render.py` and `cut.py` accept `--style FILE`; `qa.py` checks the newest render unless you pass a video.
 
 Generation: images come back as 9:16 JPEGs for Veo's first frame; Veo clips run 4, 6, or 8 seconds and can start from an image; music under 30 seconds uses the clip model, longer uses the full-song model. Free-tier keys get no generation requests, so the key needs billing enabled. The key comes from `GEMINI_API_KEY` or a `GEMINI_API_KEY=...` line in `~/.config/video-short/.env`, so it never goes in chat. `--model` overrides a default when Google renames a model; current IDs are at https://ai.google.dev/gemini-api/docs/models.
 
@@ -86,7 +86,7 @@ Sound effects: off
 - `Music lift`: cut-timeline ranges where the music rises 9 dB for a beat, such as when the speaker mentions the music. Comma-separate several ranges.
 - `Music`: an audio file or `none`. `Music level`: dB relative to the voice (default -18); the bed also dips about 5 dB while the speaker talks and comes back up in pauses. The mix normalizes to -14 LUFS with a -1.5 dBTP soft ceiling.
 - Scenes must be contiguous: each start equals the previous end, the first starts at 0, and the last ends at the clean video's end.
-- `visual` for a clip: `path [@start[-end]] [fit|fill] [zoom X,Y,W[>X,Y,W]] [hold]`, a video or gif. `@start-end` plays that range of the clip. `fill` crops to cover the panel; `fit` shows the whole clip over a blurred copy. The default is `fill` only when the shapes nearly match, so text at the sides survives. A clip shorter than its scene loops, unless `hold` freezes its last frame; give a tiny range such as `@4.30-4.35 hold` to hold one frame. `zoom` shows a window of the clip and eases it from the first region to the second over the scene: X and Y are the window center and W its width, all as fractions of the clip, so `zoom .5,.5,.9>.3,.35,.4` pushes from almost the whole frame into the upper left. Pick a window that holds one complete card or field.
+- `visual` for a clip: `path [@start[-end]] [fit|fill] [zoom X,Y,W[>X,Y,W]] [hold]`, a video or gif. `@start-end` plays that range of the clip. `fill` crops to cover the panel; `fit` shows the whole clip over a blurred copy. The default is `fill` only when the shapes nearly match, so text at the sides survives. A clip shorter than its scene loops, unless `hold` freezes its last frame; give a tiny range such as `@4.30-4.35 hold` to hold one frame. `zoom` shows a window of the clip and eases it from the first region to the second over the scene: X and Y are the window center and W its width, all as fractions of the clip, so `zoom .5,.5,.9>.3,.35,.4` pushes from almost the whole frame into the upper left. Pick a window that holds one complete card or field, and add `fit` when a zoom on a landscape clip would crop text at the panel's sides.
 - `visual` for a page: `page: path [TOP>TOP]`, a PNG from `capture.py`. It fills the panel at full width and drifts down from the first top to the second, in pixels of the 1080-wide capture (default: 160 pixels down from the top). Read the capture first and pick one complete section.
 - `visual` for a card: `card: Title ; row ; row`. Separate parts with `;`, because `|` ends a table cell. Rows slide in one by one. When the next scene repeats the same title and rows, only its new rows animate, so a list builds across scenes.
 - `visual` for a number: `number: 3x ; label` or `number: 3x ; label ; over broll/clip.mp4 @2`. The number counts up from zero, keeping any prefix or suffix such as `$`, `%`, or `x`, and the label fades in below. With `over`, it sits on that clip, darkened.

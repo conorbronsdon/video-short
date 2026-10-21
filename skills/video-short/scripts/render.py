@@ -38,7 +38,7 @@ def main():
         hyperframes("render", hf, "-o", silent, "--quality", "draft" if a.draft else "delivery")
         out = next_version(paths["renders"], os.path.basename(paths["root"]))
         run(["ffmpeg", "-v", "error", "-y", "-i", silent, "-i", mix, "-map", "0:v", "-map", "1:a", "-c:v", "copy",
-             "-c:a", "aac", "-b:a", "256k", "-t", f"{dur:.3f}", "-movflags", "+faststart", out])
+             "-c:a", "aac", "-b:a", "256k", "-frames:v", str(round(dur * 30)), "-t", f"{dur:.6f}", "-movflags", "+faststart", out])
     # A small copy for phones, chat, and email, which the full-quality master is too big for.
     share = os.path.join(paths["renders"], "share", os.path.basename(out))
     os.makedirs(os.path.dirname(share), exist_ok=True)
