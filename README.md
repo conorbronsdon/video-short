@@ -2,7 +2,7 @@
 
 Turn a raw recording into a polished video short, complete with B-roll, motion graphics, captions, music, and more using Claude, ChatGPT, Gemini, or your favorite agent.
 
-https://github.com/user-attachments/assets/a4005cf6-e734-4a95-92f0-f5f577bee7c7
+https://github.com/user-attachments/assets/a0c7a06e-9f02-4df2-b1a3-17636f71ab19
 
 [Watch the full tutorial](https://youtu.be/NWll-9p84b4) to see how I use this skill with a real example.
 
