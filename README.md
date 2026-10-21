@@ -8,34 +8,34 @@ https://github.com/user-attachments/assets/51b8decf-d719-4f4b-9824-5686b3a97ac7
 
 ## Problem
 
-This skill makes it easy for you to iterate with AI to create compelling video shorts. It gives you a review panel to give feedback to your favorite AI agent on any frame until the short feels right.
+Shorts average 200 billion daily views on YouTube alone and every social and video platform wants more of them. But it's still too hard to create great shorts manually. Meanwhile, AI has become incredible at video editing. This skill provides the right instructions for AI to work.
 
 ## What video short can do
 
-The skill supports up to 4 different layouts:
-
-1. **A-roll:** You, full screen.
-2. **Motion graphics** to bring the short to life.
-3. **Split:** A visual on top, you below.
-4. **B-roll:** A visual full screen while you keep talking.
-
-Here's what the skill can add to create your short:
-
-- **Captions** that match what you say, word for word.
-- **Motion graphics** written in HTML to bring the short to life, like list cards that build as you talk and numbers that count up.
-- **B-roll** found online that's relevant to what you're saying.
-- **AI video and music** generated with Gemini Veo and Lyria. This step needs a Gemini API key with billing enabled. You can also add your own video and music.
-
-The best part of this skill is it opens a review page that lets you review AI's work and leave comments on any frame. AI will then iterate on the short based on your comments before reloading the next draft on the same review page:
+/video-short makes it easy for you to iterate with AI to create compelling shorts. The best part of the skill is it gives you a review page to give feedback to your AI agent on any frame until the short feels right:
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="assets/review-dark.jpg">
   <img alt="The review page: the draft short plays on a scene timeline, with comments pinned to frames on the right" src="assets/review-light.jpg">
 </picture>
 
+The skill supports making shorts with 4 different layouts:
+
+1. **A-roll:** You, full screen.
+2. **Motion graphics** to bring the short to life.
+3. **Split:** A visual on top, you below.
+4. **B-roll:** A visual full screen while you keep talking.
+
+It can also add the following automatically:
+
+- **Captions** that match what you say, word for word.
+- **Motion graphics** written in HTML to bring the short to life.
+- **B-roll footage** found online that's relevant to what you're saying.
+- **AI video and music (optional)** generated with Gemini Veo and Lyria. This step needs a [Gemini API key](https://aistudio.google.com/?utm_source=peteryang&utm_medium=partner&utm_campaign=26Q3-peteryang_ais) with billing enabled. You can also add your own video and music.
+
 ## How to install video short
 
-The easiest way to install the skill is to paste this into Claude Code, ChatGPT, or your favorite AI agent:
+To install the skill, just paste this into Claude Code, ChatGPT Desktop, or your favorite agent:
 
 ```text
 Install the /video-short skill globally from https://github.com/petergyang/video-short
@@ -53,14 +53,16 @@ The first time you run the skill, it'll check if you have the following installe
 - **[yt-dlp](https://github.com/yt-dlp/yt-dlp)** to pull B-roll from YouTube, X, and other sites.
 - **[Python](https://www.python.org) 3.10 or newer** to run the editing scripts.
 - **[Node.js](https://nodejs.org) 22 or newer** for [HyperFrames](https://github.com/heygen-com/hyperframes), the free, open-source tool that transcribes your recording on your computer with the [Parakeet](https://huggingface.co/nvidia/parakeet-tdt-0.6b-v3) speech model and renders the edit into video.
-- **Optional: A Gemini API key** with billing enabled, to generate images with Nano Banana, video clips with Veo, and music with Lyria. Get a key at [Google AI Studio](https://aistudio.google.com/apikey) and set `GEMINI_API_KEY`.
+- **Optional: A Gemini API key** with billing enabled, to generate images with Nano Banana, video clips with Veo, and music with Lyria. Get a key at [Google AI Studio](https://aistudio.google.com/?utm_source=peteryang&utm_medium=partner&utm_campaign=26Q3-peteryang_ais) and set `GEMINI_API_KEY`.
 
 ## How to use video short
+
+I've made this skill as simple as possible to use, just follow these 4 steps:
 
 ![Four steps: install the skill, upload your raw recording, approve the plan, and iterate with feedback](assets/four-steps.jpg)
 
 1. **Install.** Paste the install prompt above into Claude Code, ChatGPT, or your favorite AI agent. You only do this once.
-2. **Upload.** Record yourself talking, then point your agent at the raw video:
+2. **Upload.** Record yourself talking, then run the skill and point it at your raw video:
 
    ```text
    /video-short edit my video at [path/to/video.mp4]
@@ -68,7 +70,7 @@ The first time you run the skill, it'll check if you have the following installe
 
    It'll transcribe the recording and cut retakes, false starts, and dead air.
 3. **Plan.** It researches the topic, finds B-roll from your footage and the web, and shows you a table of every scene in chat: what's on screen, the words spoken, and anything it wants to generate. Reply "go" or ask for changes.
-4. **Iterate.** The agent will render a draft and open the review page. You can pause on any frame, leave a comment, and click Send notes. The agent will then apply your notes before reloading the review page.
+4. **Iterate.** Once your agent is done with a draft edit, it'll open the review page for you to play the short, pause on any frame, and leave feedback. The agent will then apply your feedback before reloading the review page with a new version of the short.
 
 Each render saves a new version, so you can compare `v1` and `v2`, plus a small 720p copy in `renders/share/` to send from your phone or email.
 
@@ -85,7 +87,7 @@ Fonts, colors, and caption style come from a small `style.json`. Save yours at `
 
 ## Want more great AI skills?
 
-Check out [Behind the Craft](https://behindthecraft.com), my personal AI system with over a dozen other quality skills and courses.
+Become a paid member at [Behind the Craft](https://behindthecraft.com) to get all my AI skills, $600+ in AI tool discounts, and my personal AI course.
 
 Subscribe to my [YouTube channel](https://www.youtube.com/@PeterYangYT?sub_confirmation=1) and [newsletter](https://creatoreconomy.so) for practical AI tutorials and interviews.
 
