@@ -51,9 +51,9 @@ Show the plan in chat and wait for a go:
 
 ## 3. Draft and review
 
-Run `render.py --draft`, then `qa.py` on it, and fix anything in its frames that fails the step 4 checks, so the user's review goes to taste, not mistakes. Then run `review.py` in the background. The review page plays the draft on a timeline split into scenes. The user pauses on any frame, presses C to comment, and clicks Send. The script exits and prints each note with its time, scene, and spoken words.
+Run `render.py --draft`, then `qa.py` on it, and fix anything in its frames that fails the step 4 checks, so the user's review goes to taste, not mistakes. Then run `review.py` in the background. The review page plays the draft on a timeline split into scenes. The user pauses on any frame, presses C to comment, and clicks Send. The script exits and prints each note with its time, scene, spoken words, and a still of the frame the user paused on.
 
-Apply every note to `edit.md`, render the next draft, and run `review.py --no-open`; the open page reloads itself. Repeat until the user clicks Looks good.
+Look at each note's frame, then apply every note to `edit.md`, render the next draft, and run `review.py --no-open`; the open page reloads itself. Repeat until the user clicks Looks good.
 
 ## 4. Final
 

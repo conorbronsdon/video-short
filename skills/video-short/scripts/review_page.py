@@ -255,13 +255,29 @@ def write_page(root, page, video, scenes):
     open(page, "w").write(PAGE.format(css=CSS, js=JS, src=html.escape(src), scenes=json.dumps(scenes), dur=dur, fps=fps))
 
 
-def notes_markdown(data, scenes, video):
+def save_frames(data, video, out_dir):
+    """Save the frame under each comment, so the agent sees what the reviewer paused on. Returns {index: path}."""
+    os.makedirs(out_dir, exist_ok=True)
+    for f in os.listdir(out_dir):
+        os.remove(os.path.join(out_dir, f))
+    frames = {}
+    for i, c in enumerate(data.get("comments", [])):
+        path = os.path.join(out_dir, f"{i + 1:02d}-{c['t']:.2f}.jpg")
+        r = subprocess.run(["ffmpeg", "-v", "error", "-y", "-ss", f"{c['t']:.3f}", "-i", video, "-frames:v", "1",
+                            "-vf", "scale=540:-2", "-q:v", "4", path], capture_output=True)
+        if r.returncode == 0 and os.path.exists(path):
+            frames[i] = path
+    return frames
+
+
+def notes_markdown(data, scenes, video, frames=None):
     by_id = {s["id"]: s for s in scenes}
+    frames = frames or {}
     lines = [f"# Review notes: {os.path.basename(video)}", ""]
-    for c in data.get("comments", []):
+    for i, c in enumerate(data.get("comments", [])):
         s = by_id.get(c["scene"], {})
         lines += [f"## {fmt(c['t'])} · {short(c['scene'])} ({s.get('layout', '')}, {s.get('visual', '')})",
-                  f"Says: “{s.get('spoken', '')}”", "", c["note"], ""]
+                  f"Says: “{s.get('spoken', '')}”"] + ([f"Frame: {frames[i]}"] if i in frames else []) + ["", c["note"], ""]
     if data.get("overall"):
         lines += ["## Overall", data["overall"], ""]
     if len(lines) == 2:
@@ -296,7 +312,8 @@ def serve(root, page, feedback, scenes, video, port, open_browser, timeout):
             if self.path != "/api/feedback":
                 return self.send_error(404)
             data = json.loads(self.rfile.read(int(self.headers.get("Content-Length", 0))) or b"{}")
-            open(feedback, "w").write(notes_markdown(data, scenes, video))
+            frames = save_frames(data, video, os.path.join(os.path.dirname(feedback), "review-frames"))
+            open(feedback, "w").write(notes_markdown(data, scenes, video, frames))
             self.reply({"ok": True})
             done.set()
 

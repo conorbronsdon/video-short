@@ -37,7 +37,7 @@ $S/py $S/render.py "$P"
 $S/py $S/qa.py "$P"
 ```
 
-`render.py` builds the HyperFrames project in `hf/`, renders it, adds the audio mix, and saves the next version in `renders/`, plus a 720p copy under 10 MB or so in `renders/share/` for phones, chat, and email. A draft takes as long as a final; `--draft` only lowers encoding quality. `review.py` reviews the newest render unless you pass a video, saves notes to `work/feedback.md`, and uses port 8791 or any free port. `render.py` accepts `--style FILE`; `qa.py` checks the newest render unless you pass a video.
+`render.py` builds the HyperFrames project in `hf/`, renders it, adds the audio mix, and saves the next version in `renders/`, plus a 720p copy under 10 MB or so in `renders/share/` for phones, chat, and email. A draft takes as long as a final; `--draft` only lowers encoding quality. `review.py` reviews the newest render unless you pass a video, saves notes to `work/feedback.md` with a still of each commented frame in `work/review-frames/`, and uses port 8791 or any free port. `render.py` accepts `--style FILE`; `qa.py` checks the newest render unless you pass a video.
 
 Generation: images come back as 9:16 JPEGs for Veo's first frame; Veo clips run 4, 6, or 8 seconds and can start from an image; music under 30 seconds uses the clip model, longer uses the full-song model. Free-tier keys get no generation requests, so the key needs billing enabled. The key comes from `GEMINI_API_KEY` or a `GEMINI_API_KEY=...` line in `~/.config/video-short/.env`, so it never goes in chat. `--model` overrides a default when Google renames a model; current IDs are at https://ai.google.dev/gemini-api/docs/models.
 
