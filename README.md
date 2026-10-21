@@ -31,7 +31,7 @@ It can also add the following automatically:
 - **Captions** that match what you say, word for word.
 - **Motion graphics** written in HTML to bring the short to life.
 - **B-roll footage** found online that's relevant to what you're saying.
-- **AI video and music (optional)** generated with Gemini Veo and Lyria. This step needs a [Gemini API key](https://aistudio.google.com/?utm_source=peteryang&utm_medium=partner&utm_campaign=26Q3-peteryang_ais) with billing enabled. You can also add your own video and music.
+- **AI video and music (optional)** generated with Gemini Omni Flash and Lyria. This step needs a [Gemini API key](https://aistudio.google.com/?utm_source=peteryang&utm_medium=partner&utm_campaign=26Q3-peteryang_ais) with billing enabled. You can also add your own video and music.
 
 ## How to install video short
 
@@ -53,7 +53,7 @@ The first time you run the skill, it'll check if you have the following installe
 - **[yt-dlp](https://github.com/yt-dlp/yt-dlp)** to pull B-roll from YouTube, X, and other sites.
 - **[Python](https://www.python.org) 3.10 or newer** to run the editing scripts.
 - **[Node.js](https://nodejs.org) 22 or newer** for [HyperFrames](https://github.com/heygen-com/hyperframes), the free, open-source tool that transcribes your recording on your computer with the [Parakeet](https://huggingface.co/nvidia/parakeet-tdt-0.6b-v3) speech model and renders the edit into video.
-- **Optional: A Gemini API key** with billing enabled, to generate images with Nano Banana, video clips with Veo, and music with Lyria. Get a key at [Google AI Studio](https://aistudio.google.com/?utm_source=peteryang&utm_medium=partner&utm_campaign=26Q3-peteryang_ais) and set `GEMINI_API_KEY`.
+- **Optional: A Gemini API key** with billing enabled, to generate images with Nano Banana, video clips with Omni Flash, and music with Lyria. Get a key at [Google AI Studio](https://aistudio.google.com/?utm_source=peteryang&utm_medium=partner&utm_campaign=26Q3-peteryang_ais) and set `GEMINI_API_KEY`.
 
 ## How to use video short
 
