@@ -22,7 +22,7 @@ Shorts average 200 billion daily views on YouTube alone, but making a great one 
 The skill supports making shorts with 4 different layouts:
 
 1. **A-roll:** You, full screen.
-2. **Motion graphics** to bring the short to life.
+2. **Punch:** A tighter shot of you for emphasis.
 3. **Split:** A visual on top, you below.
 4. **B-roll:** A visual full screen while you keep talking.
 
@@ -69,7 +69,7 @@ I've made this skill as simple as possible to use, just follow these 4 steps:
    ```
 
    It'll transcribe the recording and cut retakes, false starts, and dead air.
-3. **Plan.** It researches the topic, finds B-roll from your footage and the web, and shows you a table of every scene in chat: what's on screen, the words spoken, and anything it wants to generate. Reply "go" or ask for changes.
+3. **Plan.** It researches the topic, finds B-roll from your footage and the web, and shows you a scene-by-scene plan in chat: what's on screen, the words spoken, and anything it wants to generate. Reply "go" or ask for changes.
 4. **Iterate.** Once your agent is done with a draft edit, it'll open the review page for you to play the short, pause on any frame, and leave feedback. The agent will then apply your feedback before reloading the review page with a new version of the short.
 
 Each render saves a new version, so you can compare `v1` and `v2`, plus a small 720p copy in `renders/share/` to send from your phone or email.
