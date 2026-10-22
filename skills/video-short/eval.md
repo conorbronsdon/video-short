@@ -15,17 +15,20 @@ Answer each check yes or no before sharing the final render. Fix any no first.
 6. Does the Short answer the question its hook raises?
 7. Is the speaker on screen for at least half the Short, with no full-screen B-roll shot longer than about 3.5 seconds?
 8. Does each visual show something the words don't already say?
-9. Does every off-camera shot move, with no static image or slide?
-10. Is every line of on-screen text in B-roll whole, with nothing cut off at a frame edge?
-11. Is every number and result on screen one the speaker said or the source shows?
-12. Is every logo on screen from the brand's official file?
-13. Is the speaker's face clear of every card and overlay, with no captioned video playing under this Short's captions?
-14. Did the user approve the plan in chat, and was every generated asset one they approved?
+9. When the user shared sources, does each cited claim show that source?
+10. Does every off-camera shot move, with no static image or slide?
+11. Is every line of on-screen text in B-roll and receipts whole, with nothing cut off at a frame edge?
+12. Is every number and result on screen one the speaker said or the source shows?
+13. Is every logo on screen from the brand's official file?
+14. Is the speaker's face clear of every card and overlay?
+15. Did you check frames across every clip, with none carrying its own captions, kinetic text, or rapid cuts?
+16. Does the pace fit the kind of Short, holding receipts while they're discussed in commentary?
+17. Did the user approve the plan in chat, and was every generated asset one they approved?
 
 ## Review and final
 
-15. Before the first review, did the draft pass the step 4 frame checks?
-16. Was every note from the review page applied to `edit.md`, and did the user approve the last draft?
-17. Does `qa.py` pass every check?
-18. In the QA frames, does every check in SKILL.md step 4 hold?
-19. Is each emphasis box rare and on a name, number, or main claim?
+18. Before the first review, did the draft pass the step 4 frame checks?
+19. Was every note from the review page applied to `edit.md`, and did the user approve the last draft?
+20. Does `qa.py` pass every check?
+21. In the QA frames, does every check in SKILL.md step 4 hold?
+22. Is each emphasis box rare and on a name, number, or main claim?

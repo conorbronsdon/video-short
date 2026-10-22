@@ -74,10 +74,10 @@ def main():
 
         parts, joins = [], ""
         fade = 0.012  # tiny audio fades stop clicks at each join
-        for i, (a, b) in enumerate(cuts):
-            parts.append(f"[0:v]trim=start={a:.6f}:end={b:.6f},setpts=PTS-STARTPTS,fps={FPS}[v{i}]")
-            parts.append(f"[0:a]atrim=start={a:.6f}:end={b:.6f},asetpts=PTS-STARTPTS,"
-                         f"afade=t=in:d={fade},afade=t=out:st={max(0, b - a - fade):.6f}:d={fade}[a{i}]")
+        for i, (lo, hi) in enumerate(cuts):
+            parts.append(f"[0:v]trim=start={lo:.6f}:end={hi:.6f},setpts=PTS-STARTPTS,fps={FPS}[v{i}]")
+            parts.append(f"[0:a]atrim=start={lo:.6f}:end={hi:.6f},asetpts=PTS-STARTPTS,"
+                         f"afade=t=in:d={fade},afade=t=out:st={max(0, hi - lo - fade):.6f}:d={fade}[a{i}]")
             joins += f"[v{i}][a{i}]"
         grade = setting(edit, "grade") or load_style(paths["root"], a.style).get("grade", "")
         grade_chain = f",{grade}" if grade and grade.lower() != "none" else ""

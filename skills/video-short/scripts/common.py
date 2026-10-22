@@ -177,7 +177,8 @@ def parse_edit(path):
 
 
 def parse_visual(v, line_no):
-    """'broll/x.mp4 @1.2-4 fit zoom .5,.5,.8>.3,.4,.4 hold' -> clip; 'page: broll/site.png 300>700' -> a page capture
+    """'broll/x.mp4 @1.2-4 fit zoom .5,.5,.8>.3,.4,.4 hold' -> clip; 'receipt: broll/tweet.png mark .05,.3,.9,.12' -> a cited
+    screenshot on a card with highlighted lines; 'page: broll/site.png 300>700' -> a page capture
     that drifts down; 'card: Title ; row ; row' -> card; 'number: 89.5% ; label' -> number;
     'graphic: graphics/x.html' -> a HyperFrames sub-composition the agent wrote; '' -> none."""
     v = v.strip()
@@ -195,6 +196,19 @@ def parse_visual(v, line_no):
             bg = parse_visual(parts[2][5:], line_no)
             vis["bg"] = bg if bg and bg["type"] == "clip" else die(f"edit.md line {line_no}: 'over' needs a clip path")
         return vis
+    if v.lower().startswith("receipt:"):
+        tokens = v[8:].split()
+        rec = {"type": "receipt", "src": tokens[0] if tokens else "", "marks": []}
+        it = iter(tokens[1:])
+        for t in it:
+            try:
+                assert t == "mark"
+                box = tuple(float(x) for x in next(it, "").split(","))
+                assert len(box) == 4 and all(0 <= x <= 1 for x in box)
+            except (ValueError, AssertionError):
+                die(f"edit.md line {line_no}: receipt is 'receipt: path [mark X,Y,W,H]...', each mark a line's left, top, width, and height as fractions of the screenshot")
+            rec["marks"].append(box)
+        return rec
     if v.lower().startswith("graphic:"):
         return {"type": "graphic", "src": v[8:].strip()}
     if v.lower().startswith("page:"):   # a phone-width page capture, shown full width and drifting down
@@ -249,12 +263,12 @@ def validate_scenes(edit, project, duration):
         if sc["end"] <= sc["start"]:
             die(f"edit.md line {sc['line']}: scene end must be after start")
         if sc["layout"] in ("split", "b-roll") and not sc["visual"]:
-            die(f"edit.md line {sc['line']}: {sc['layout']} needs a visual (a clip path, 'card: ...', 'number: ...', or 'graphic: ...')")
+            die(f"edit.md line {sc['line']}: {sc['layout']} needs a visual (a clip path, 'receipt: ...', 'card: ...', 'number: ...', or 'graphic: ...')")
         vis = sc["visual"]
-        if vis and vis["type"] == "graphic":
+        if vis and vis["type"] in ("graphic", "receipt"):
             vis["abs"] = vis["src"] if os.path.isabs(vis["src"]) else os.path.join(project, vis["src"])
             if not os.path.isfile(vis["abs"]):
-                die(f"edit.md line {sc['line']}: graphic not found: {vis['src']}")
+                die(f"edit.md line {sc['line']}: {vis['type']} not found: {vis['src']}")
         if vis and vis.get("bg"):
             b = vis["bg"]
             b["abs"] = b["src"] if os.path.isabs(b["src"]) else os.path.join(project, b["src"])

@@ -176,6 +176,30 @@ def caption_track(chunks, scenes, total_frames):
     return out
 
 
+def receipt_panel(sc, i, t0, d, out_h, top, A, js, sfx):
+    """A cited screenshot as a card centered in its panel, never cropped, with each marked line highlighted in turn."""
+    v, sid = sc["visual"], sc["id"]
+    key = f"{os.path.realpath(v['abs'])}|{os.path.getmtime(v['abs'])}"
+    name = f"{sid}-{hashlib.md5(key.encode()).hexdigest()[:8]}{os.path.splitext(v['abs'])[1].lower()}"
+    shutil.copy(v["abs"], os.path.join(A, "clips", name))
+    iw, ih, _ = probe(v["abs"])
+    s = min(960 / iw, (out_h - 120) / ih)
+    w, h = iw * s, ih * s
+    if w < 760:
+        print(f"warning: {sid} receipt shows at {w:.0f}px wide; crop the screenshot to the lines that matter so it reads on a phone")
+    marks = "".join(f'<div id="{sid}m{k}" class="mark" style="left:{x * 100:.2f}%;top:{y * 100:.2f}%;width:{mw * 100:.2f}%;height:{mh * 100:.2f}%"></div>'
+                    for k, (x, y, mw, mh) in enumerate(v["marks"]))
+    js.append(f'gsap.set("#{sid}rc", {{ autoAlpha: 0 }});')
+    js.append(f'tl.fromTo("#{sid}rc", {{ autoAlpha: 0, y: 40 }}, {{ autoAlpha: 1, y: 0, duration: .4, ease: "power3.out", immediateRender: false }}, {t0:.3f});')
+    js.append(f'tl.fromTo("#{sid}rc", {{ scale: 1 }}, {{ scale: 1.03, duration: {d:.3f}, ease: "none", immediateRender: false }}, {t0:.3f});')
+    sfx.append(("tap", t0))
+    for k in range(len(v["marks"])):   # the highlighter sweeps across each marked line, one after another
+        js.append(f'gsap.set("#{sid}m{k}", {{ scaleX: 0 }});')
+        js.append(f'tl.fromTo("#{sid}m{k}", {{ scaleX: 0 }}, {{ scaleX: 1, duration: .45, ease: "power2.inOut", immediateRender: false }}, {t0 + .5 + .5 * k:.3f});')
+    return (f'<div class="panel vis cardbg" style="top:{top}px;height:{out_h}px"><div id="{sid}rc" class="receipt" style="width:{w:.0f}px;height:{h:.0f}px">'
+            f'<img src="assets/clips/{name}" alt="">{marks}</div></div>')
+
+
 # ---------- audio ----------
 
 def read_pcm(path, seconds):
@@ -352,6 +376,8 @@ def build(project, style_arg=None):
                 if lay == "b-roll":
                     sfx.append(("air", t0))
                 return f'<div class="panel vis" style="top:{top}px;height:{out_h}px"><div id="{sid}vis" class="push">{inner}</div></div>'
+            if v["type"] == "receipt":
+                return receipt_panel(sc, i, t0, d, out_h, top, A, js, sfx)
             if v["type"] == "graphic":   # the agent's own HyperFrames sub-composition, copied in so it is self-contained
                 text = open(v["abs"]).read()
                 m = re.search(r'data-composition-id="([^"]+)"', text)
@@ -505,6 +531,9 @@ html, body {{ margin: 0; width: 100%; height: 100%; overflow: hidden; background
 .bignum, .numlab {{ text-shadow: 0 4px 30px rgba(0,0,0,.6); }}
 .bignum {{ font-family: Fnum, sans-serif; font-weight: {w_num}; color: {accent}; line-height: 1; }}
 .numlab {{ margin-top: 32px; font: {w_body} 76px/1.2 Fbody, sans-serif; color: {text}; padding: 0 60px; }}
+.receipt {{ position: relative; border-radius: 22px; overflow: hidden; box-shadow: 0 18px 50px rgba(0,0,0,.45); background: #fff; }}
+.receipt img {{ position: absolute; inset: 0; width: 100%; height: 100%; }}
+.receipt .mark {{ position: absolute; background: #FFE34D; mix-blend-mode: multiply; transform-origin: left center; border-radius: 4px; }}
 .cap {{ position: absolute; left: 0; width: {W}px; z-index: 50; text-align: center; transform: translateY(-50%); }}
 .cap .band {{ display: inline-block; max-width: 880px; padding: {pad_y}px {pad_x}px; border-radius: {cap_radius}px; background: {cap_box};
              box-shadow: 0 0 0 2px {cap_border}; font: {w_cap} {cap_size}px/1.2 Fcap, sans-serif; color: {cap_color}; }}

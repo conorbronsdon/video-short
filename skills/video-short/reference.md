@@ -20,7 +20,7 @@ $S/py $S/cut.py "$P" --look                                     # gridded stills
 $S/py $S/cut.py "$P" --look --grade "eq=contrast=1.06:saturation=1.1"
 $S/py $S/cut.py "$P"                                            # -> work/clean.mp4 and transcript_clean
 
-# B-roll: a web page at phone width, as a tall 1080-wide PNG for a page: scene
+# B-roll: a web page at phone width, as a tall 1080-wide PNG for a page: scene, or to crop into a receipt
 $S/py $S/capture.py "https://example.com/pricing" "$P/broll/pricing.png"
 
 # 2. Optional generation (needs GEMINI_API_KEY with billing enabled)
@@ -66,7 +66,7 @@ Sound effects: off
 | s01 | 0.00  | 3.80  | a-roll |                                              | hook                    |
 | s02 | 3.80  | 5.30  | split  | broll/3d_castle.mp4 @0.5                     | on "3D models"          |
 | s03 | 5.30  | 6.80  | b-roll | broll/benchmarks.mp4 @2-3 zoom .5,.5,.9>.3,.35,.45 hold | push in on the top score |
-| s04 | 6.80  | 11.00 | punch  |                                              | the turn                |
+| s04 | 6.80  | 11.00 | split  | receipt: broll/post.png mark .08,.66,.86,.07 | the launch post she cites |
 | s05 | 11.00 | 13.90 | split  | card: Gemini did the edit ; Image            | one row per spoken item |
 | s06 | 13.90 | 16.00 | split  | card: Gemini did the edit ; Image ; Video    | only the new row animates |
 | s07 | 16.00 | 19.50 | split  | number: 3 ; prompts from raw cut to Short    | counts up               |
@@ -91,6 +91,7 @@ Sound effects: off
 - `visual` for a card: `card: Title ; row ; row`. Separate parts with `;`, because `|` ends a table cell. Rows slide in one by one. When the next scene repeats the same title and rows, only its new rows animate, so a list builds across scenes.
 - `visual` for a number: `number: 3x ; label` or `number: 3x ; label ; over broll/clip.mp4 @2`. The number counts up from zero, keeping any prefix or suffix such as `$`, `%`, or `x`, and the label fades in below. With `over`, it sits on that clip, darkened.
 - `visual` for a graphic: `graphic: path.html`, a HyperFrames sub-composition you write. See below.
+- `visual` for a receipt: `receipt: path [mark X,Y,W,H]...`, a screenshot (png, jpg, webp) of a tweet, article, or page the speaker cites. It sits as a card centered in the panel, up to 960px wide, never cropped, with a slow push. Each `mark` sweeps a highlighter across one line, in turn: the line's left, top, width, and height as fractions of the screenshot. Marks show on light backgrounds, such as most tweets and articles. Crop the screenshot to whole lines that matter; the build warns when a card would show under 760px wide.
 - `split` and `b-roll` need a visual. `a-roll` and `punch` leave it empty.
 - `## Caption fixes` rows replace words in captions only, matching whole words without case.
 - `## Emphasis` rows are phrases that get a solid box behind them in the caption (the style's `caption.emphasis` color), matching whole words without case. A style without `emphasis` ignores them.
@@ -144,7 +145,10 @@ curl -sL -o "$P/broll/clip.gif" "MEDIA_URL"
 # Trim to the useful seconds and convert anything (gif, webm, mov) to H.264
 ffmpeg -ss 12.0 -t 4 -i in.webm -an -c:v libx264 -crf 18 -pix_fmt yuv420p -vf "scale=trunc(iw/2)*2:trunc(ih/2)*2" "$P/broll/clip.mp4"
 
-# Crop to the part that reads on a phone (w:h:x:y in source pixels)
+# Crop a capture or screenshot to the lines a receipt shows (w:h:x:y in source pixels)
+ffmpeg -i "$P/broll/post.png" -vf "crop=1080:300:0:820" "$P/broll/quote.png"
+
+# Crop a clip to the part that reads on a phone
 ffmpeg -i in.mp4 -an -vf "crop=1200:900:300:120" -c:v libx264 -crf 18 "$P/broll/clip_crop.mp4"
 ```
 
