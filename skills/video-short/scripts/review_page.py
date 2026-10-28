@@ -363,7 +363,13 @@ def serve(root, page, feedback, scenes, video, port, open_browser, timeout):
     server.shutdown()
     if not got:
         sys.exit("No notes before the timeout. Reopen the review page; it keeps unsent notes.")
-    print(open(feedback, encoding="utf-8").read())
+    with open(feedback, encoding="utf-8") as f:
+        notes = f.read()
+    try:
+        print(notes)
+    except UnicodeEncodeError:   # a cp1252 console can't print an emoji or an arrow in a note; the file is already saved
+        sys.stdout.buffer.write(notes.encode("utf-8") + b"\n")
+        sys.stdout.flush()
 
 
 PAGE = """<!DOCTYPE html>
