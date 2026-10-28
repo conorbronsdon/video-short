@@ -199,6 +199,7 @@ addEventListener("keydown", (e) => {
 });
 
 $("send").onclick = async () => {
+  if (note.value.trim()) add();   // a typed note not yet added is still a note, not an approval
   $("send").disabled = true; $("status").textContent = "Sending…";
   try {
     const r = await fetch("/api/feedback", { method: "POST", headers: { "Content-Type": "application/json" },
